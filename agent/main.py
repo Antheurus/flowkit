@@ -47,7 +47,7 @@ async def ws_handler(websocket):
         async for raw in websocket:
             try:
                 data = json.loads(raw)
-                await client.handle_message(data)
+                await client.handle_message(data, websocket)
             except json.JSONDecodeError:
                 logger.warning("Invalid JSON from extension")
             except Exception as e:
@@ -55,7 +55,7 @@ async def ws_handler(websocket):
     except websockets.ConnectionClosed:
         pass
     finally:
-        client.clear_extension()
+        client.clear_extension(websocket)
         logger.info("Extension disconnected")
 
 
@@ -90,9 +90,12 @@ async def lifespan(app: FastAPI):
 
     controller = get_worker_controller()
 
-    # SIGTERM handler for graceful shutdown
-    loop = asyncio.get_event_loop()
-    loop.add_signal_handler(signal.SIGTERM, controller.request_shutdown)
+    # SIGTERM handler for graceful shutdown (Unix only)
+    try:
+        loop = asyncio.get_event_loop()
+        loop.add_signal_handler(signal.SIGTERM, controller.request_shutdown)
+    except (NotImplementedError, AttributeError):
+        pass
 
     # Start background tasks
     ws_task = asyncio.create_task(run_ws_server())
