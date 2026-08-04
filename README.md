@@ -146,6 +146,26 @@ Each project goes through: **story → entities → reference images → scene i
 
 <sub>The Chrome extension runs alongside Google Flow — showing real-time request log (614 total, 328 success), video generation progress, and token status. The Python agent communicates with the extension via WebSocket to automate all API calls.</sub>
 
+---
+
+### Web Dashboard — Ops Console
+
+A local React dashboard (`dashboard/`) for monitoring and driving the pipeline — real-time KPIs, per-video stage progress, a scene-level pipeline view with AI review, and a setup guide, all backed by the same FastAPI agent. Supports English, Vietnamese, Hindi, Indonesian, Chinese, Korean, and Japanese.
+
+<p align="center">
+  <img src="docs/images/dashboard_overview.png" width="800" alt="Dashboard home screen with KPI cards, pipeline throughput table, needs-attention panel, and live event stream" />
+</p>
+
+<p align="center">
+  <img src="docs/images/dashboard_pipeline.png" width="380" alt="Scene pipeline view with stage rail (Refs/Images/Videos/Upscale) and per-scene status cards" />
+  <img src="docs/images/dashboard_project_detail.png" width="380" alt="Project detail overview tab with editable fields, narrator settings, and stage rollup" />
+</p>
+
+<p align="center">
+  <img src="docs/images/dashboard_guide.png" width="380" alt="Built-in setup guide with live extension connection status" />
+  <img src="docs/images/dashboard_i18n.png" width="380" alt="Dashboard rendered in Japanese, demonstrating the built-in multi-language support" />
+</p>
+
 ## Architecture
 
 ```
