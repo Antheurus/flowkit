@@ -487,8 +487,8 @@ Skills are `.md` recipes any AI coding-assistant CLI can read and follow — thi
 
 | CLI | Instructions | How skills work |
 |-----|-------------|-----------------|
-| Claude Code | `CLAUDE.md` (auto-loaded) | Native `/fk:` slash commands |
-| Codex CLI | `AGENTS.md` → reads `CLAUDE.md` | User says `/fk:<name>`, agent reads `skills/fk:<name>.md` |
+| Claude Code | `CLAUDE.md` (auto-loaded) | Native `/fk-*` slash commands |
+| Codex CLI | `AGENTS.md` → reads `CLAUDE.md` | User says `/fk-<name>`, agent reads `skills/fk-<name>.md` |
 | Gemini CLI | `GEMINI.md` → reads `CLAUDE.md` | Same pattern |
 
 ### AI Vision Providers (Video Review)
