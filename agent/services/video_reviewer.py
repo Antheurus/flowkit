@@ -18,7 +18,15 @@ import ssl
 import aiohttp
 import certifi
 
-from agent.config import ANTHROPIC_API_KEY, REVIEW_MODEL, REVIEW_FPS_LIGHT, REVIEW_FPS_DEEP, REVIEW_MAX_FRAMES
+from agent import config
+from agent.config import (
+    ANTHROPIC_API_KEY,
+    REVIEW_MODEL,
+    REVIEW_FPS_LIGHT,
+    REVIEW_FPS_DEEP,
+    REVIEW_MAX_FRAMES,
+    REVIEW_CLI_TIMEOUT_S,
+)
 from agent.db.crud import list_scenes, get_project_characters
 from agent.models.review import DimensionScores, SceneReview, SegmentScore, VideoError, VideoReview
 
@@ -292,7 +300,66 @@ def _parse_json_response(raw: str) -> dict:
     return json.loads(raw)
 
 
-# ─── Backend 1: Claude CLI (default, no API key needed) ──────
+# ─── Backend 1: CLI providers (default, no API key needed) ───
+
+PROVIDER_BINARIES = {
+    "claude": "claude",
+    "agy": "agy",
+    "codex": "codex",
+}
+
+
+async def _communicate_with_timeout(proc, provider: str) -> tuple:
+    try:
+        return await asyncio.wait_for(proc.communicate(), timeout=REVIEW_CLI_TIMEOUT_S)
+    except asyncio.TimeoutError:
+        proc.kill()
+        await proc.communicate()
+        raise RuntimeError(f"{provider} CLI timed out after {REVIEW_CLI_TIMEOUT_S}s")
+
+
+async def _spawn_and_check(args: tuple, provider: str) -> bytes:
+    proc = await asyncio.create_subprocess_exec(
+        *args, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+    )
+    stdout, stderr = await _communicate_with_timeout(proc, provider)
+    if proc.returncode != 0:
+        raise RuntimeError(f"{provider} CLI failed (rc={proc.returncode}): {stderr.decode()[-500:]}")
+    return stdout
+
+
+async def _run_claude_cli(prompt: str) -> str:
+    stdout = await _spawn_and_check(
+        ("claude", "-p", prompt, "--allowedTools", "Read", "--output-format", "text"), "claude"
+    )
+    return stdout.decode()
+
+
+async def _run_agy_cli(prompt: str) -> str:
+    stdout = await _spawn_and_check(
+        ("agy", "-p", prompt, "--dangerously-skip-permissions", "--output-format", "text"), "agy"
+    )
+    return stdout.decode()
+
+
+async def _run_codex_cli(prompt: str, contact_sheet: Path) -> str:
+    with tempfile.NamedTemporaryFile(suffix=".txt", delete=False) as tmp:
+        out_path = Path(tmp.name)
+    try:
+        await _spawn_and_check(
+            (
+                "codex", "exec",
+                "-i", str(contact_sheet),
+                "-o", str(out_path),
+                "--dangerously-bypass-approvals-and-sandbox",
+                prompt,
+            ),
+            "codex",
+        )
+        return out_path.read_text()
+    finally:
+        out_path.unlink(missing_ok=True)
+
 
 async def _analyze_cli(
     contact_sheet: Path,
@@ -300,25 +367,25 @@ async def _analyze_cli(
     fps: float,
     scene: dict,
 ) -> dict:
-    """Analyze contact sheet via claude CLI subprocess."""
-    prompt = _build_prompt(n_frames, fps, scene)
-    full_prompt = (
-        f"Read the image at {contact_sheet}. "
-        f"It is a contact sheet of {n_frames} video frames at {fps}fps with timestamps.\n\n"
-        f"{prompt}"
-    )
-    logger.info("Calling claude CLI for vision analysis (%d frames)", n_frames)
-    proc = await asyncio.create_subprocess_exec(
-        "claude", "-p", full_prompt,
-        "--allowedTools", "Read",
-        "--output-format", "text",
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-    stdout, stderr = await proc.communicate()
-    if proc.returncode != 0:
-        raise RuntimeError(f"claude CLI failed (rc={proc.returncode}): {stderr.decode()[-500:]}")
-    return _parse_json_response(stdout.decode())
+    """Analyze contact sheet via the active CLI provider (claude/agy/codex)."""
+    base_prompt = _build_prompt(n_frames, fps, scene)
+    provider = config.CLI_PROVIDERS["active"]
+    logger.info("Calling %s CLI for vision analysis (%d frames)", provider, n_frames)
+    if provider == "codex":
+        full_prompt = (
+            f"This is a contact sheet of {n_frames} video frames at {fps}fps with timestamps.\n\n"
+            f"{base_prompt}"
+        )
+        raw = await _run_codex_cli(full_prompt, contact_sheet)
+    else:
+        full_prompt = (
+            f"Read the image at {contact_sheet}. "
+            f"It is a contact sheet of {n_frames} video frames at {fps}fps with timestamps.\n\n"
+            f"{base_prompt}"
+        )
+        runner = {"claude": _run_claude_cli, "agy": _run_agy_cli}[provider]
+        raw = await runner(full_prompt)
+    return _parse_json_response(raw)
 
 
 # ─── Backend 2: Anthropic SDK (when API key is set) ──────────
@@ -415,7 +482,7 @@ async def review_scene_video(
             )
             if not contact_sheet.exists():
                 raise RuntimeError(f"Contact sheet not created for scene {scene['id']}")
-            logger.info("Analyzing %d frames via claude CLI", n_frames)
+            logger.info("Analyzing %d frames via CLI provider", n_frames)
             result = await _analyze_cli(contact_sheet, n_frames, fps, scene)
 
     # Parse structured errors with severity

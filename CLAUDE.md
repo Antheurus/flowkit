@@ -44,6 +44,7 @@ curl -s http://127.0.0.1:8100/health
 | `/fk-doctor` | Diagnose errors + prescribe fixes (Flow/extension/worker/YT) |
 | `/fk-add-material` | Set image material style |
 | `/fk-change-model` | Change video/image model |
+| `/fk-change-provider` | View & switch AI CLI provider used for video review (claude/agy/codex) |
 | `/fk-insert-scene` | Insert scenes into chain |
 | `/fk-upload-image` | Upload local image to get media_id |
 | `/fk-thumbnail` | Generate YouTube thumbnails |

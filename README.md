@@ -416,11 +416,13 @@ Ready-to-use workflow recipes in `skills/` (also available as `/slash-commands` 
 | Skill | Description |
 |-------|-------------|
 | `/fk-create-project` | Create project + entities + video + scenes interactively |
+| `/fk-research` | Fact-check story details before scripting |
 | `/fk-gen-refs` | Generate reference images for all entities |
 | `/fk-gen-images` | Generate scene images with character refs |
-| `/fk-gen-videos` | Generate videos from scene images |
-| `/fk-upscale-4k` | Upscale completed videos to 4K + auto-download (PAYGATE_TIER_TWO) |
+| `/fk-gen-videos` | Generate videos from scene images (4K upscale via `UPSCALE_VIDEO` request, `PAYGATE_TIER_TWO`) |
 | `/fk-concat` | Download + merge all scene videos |
+| `/fk-pipeline` | Smart full-pipeline orchestrator — runs the whole chain end to end |
+| `/fk-monitor` | Live monitor for a running pipeline |
 
 ### Advanced Video
 
@@ -430,20 +432,31 @@ Ready-to-use workflow recipes in `skills/` (also available as `/slash-commands` 
 | `/fk-insert-scene` | Multi-angle shots, cutaways, close-ups within a chain |
 | `/fk-creative-mix` | Analyze story + suggest all techniques (chain, insert, r2v, parallel) |
 
+### Review & Quality
+
+| Skill | Description |
+|-------|-------------|
+| `/fk-review-video` | AI vision scoring of generated scene videos (quality, consistency, usability) — see [AI Vision Providers](#ai-vision-providers-video-review) below |
+| `/fk-review-board` | Visual scene-by-scene review board for feedback before locking a cut |
+| `/fk-change-provider` | View/switch which AI CLI (claude/agy/codex) powers `/fk-review-video` |
+
 ### Reference
 
 | Skill | Description |
 |-------|-------------|
 | `/fk-camera-guide` | Camera angles, movements, lighting, DOF for cinematic video prompts |
+| `/fk-thumbnail-guide` | Hook-worthy thumbnail design rules |
 
 ### TTS & Narration
 
 | Skill | Description |
 |-------|-------------|
 | `/fk-gen-tts-template` | Create a voice template for consistent narration |
+| `/fk-import-voice` | Import an existing voice recording as a template |
 | `/fk-gen-narrator` | Generate narrator text + TTS for all scenes |
 | `/fk-gen-text-overlays` | Generate text overlays from narrator text (dates, locations, stats) |
 | `/fk-concat-fit-narrator` | Trim scene videos to fit narrator duration, then concat |
+| `/fk-gen-music` | Generate background music via Suno |
 
 ### YouTube
 
@@ -459,18 +472,45 @@ Ready-to-use workflow recipes in `skills/` (also available as `/slash-commands` 
 | Skill | Description |
 |-------|-------------|
 | `/fk-status` | Full project dashboard + recommended next action |
+| `/fk-switch-project` | Switch the active project |
 | `/fk-fix-uuids` | Repair any CAMS... media_ids to UUID format |
+| `/fk-refresh-urls` | Refresh expired GCS signed URLs for images/videos |
+| `/fk-upload-image` | Upload a local image to get a `media_id` |
 | `/fk-add-material` | Image material system |
+| `/fk-change-model` | View/switch video, image, and upscale model keys |
+| `/fk-dashboard` | Live status in the Claude Code statusline |
+| `/fk-doctor` | Diagnose any error (Flow API, extension, worker, YouTube) and prescribe a fix |
 
-### AI CLI Compatibility
+### AI CLI Compatibility (Skill Consumption)
 
-Skills work with any AI CLI that can read files:
+Skills are `.md` recipes any AI coding-assistant CLI can read and follow — this is about **which agent reads the skill files**, not which model does the work:
 
 | CLI | Instructions | How skills work |
 |-----|-------------|-----------------|
 | Claude Code | `CLAUDE.md` (auto-loaded) | Native `/fk:` slash commands |
 | Codex CLI | `AGENTS.md` → reads `CLAUDE.md` | User says `/fk:<name>`, agent reads `skills/fk:<name>.md` |
 | Gemini CLI | `GEMINI.md` → reads `CLAUDE.md` | Same pattern |
+
+### AI Vision Providers (Video Review)
+
+Separate from the table above — this is about **which CLI backend does the vision analysis** for `/fk-review-video`. Three providers are supported and swappable at runtime, no restart required:
+
+| Provider | Binary | Setup |
+|----------|--------|-------|
+| `claude` | Claude Code CLI | Default — works out of the box |
+| `agy` | Google Antigravity CLI | Install separately, sign in once |
+| `codex` | OpenAI Codex CLI | `npm install -g @openai/codex`, then `codex login` once |
+
+```bash
+# View provider status (installed / version-tested / currently active)
+curl -s "http://127.0.0.1:8100/api/providers?live=true" | python3 -m json.tool
+
+# Switch provider — hot-reloaded immediately, no server restart
+curl -X PATCH http://127.0.0.1:8100/api/providers \
+  -H "Content-Type: application/json" -d '{"active": "agy"}'
+```
+
+Or just run `/fk-change-provider` for an interactive picker. Full details in `skills/fk-change-provider.md`.
 
 ## Video Generation Techniques
 
@@ -565,18 +605,21 @@ Materials control both entity `image_prompt` style and scene `scene_prefix`. Exa
 ```
 agent/
 ├── main.py              # FastAPI app + WebSocket server
-├── config.py            # Configuration (loads models.json)
+├── config.py            # Configuration (loads models.json, providers.json)
 ├── models.json          # Video/upscale/image model mappings
+├── providers.json        # Active AI CLI provider for video review (claude/agy/codex)
 ├── db/
 │   ├── schema.py        # SQLite schema (aiosqlite)
 │   └── crud.py          # Async CRUD with column whitelisting
 ├── models/              # Pydantic models + Literal enums
-├── api/                 # REST routes (projects, videos, scenes, characters, requests, flow)
+├── api/                 # REST routes (projects, videos, scenes, characters, requests,
+│                         #   flow, models, providers, reviews, materials, music, tts)
 ├── services/
 │   ├── flow_client.py   # WS bridge to extension
 │   ├── headers.py       # Randomized browser headers
 │   ├── tts.py           # OmniVoice TTS (subprocess-based)
 │   ├── scene_chain.py   # Continuation scene logic
+│   ├── video_reviewer.py # AI vision review — contact sheet + claude/agy/codex CLI dispatch
 │   └── post_process.py  # ffmpeg trim/merge/music
 └── worker/
     └── processor.py     # Queue processor + poller
