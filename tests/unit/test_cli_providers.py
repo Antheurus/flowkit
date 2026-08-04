@@ -18,6 +18,7 @@ from agent.services.video_reviewer import (
     _run_agy_cli,
     _run_codex_cli,
     _analyze_cli,
+    _build_prompt,
 )
 from agent.api import providers as providers_api
 
@@ -80,7 +81,7 @@ class TestRunAgyCli:
 class TestRunCodexCli:
     @pytest.mark.asyncio
     async def test_argv_structure_and_output_file_roundtrip(self):
-        contact_sheet = Path("/tmp/sheet.png")
+        contact_sheets = [Path("/tmp/sheet_00.jpg"), Path("/tmp/sheet_01.jpg")]
         captured = {}
 
         async def fake_create_subprocess_exec(*args, **kwargs):
@@ -96,14 +97,15 @@ class TestRunCodexCli:
             "agent.services.video_reviewer.asyncio.create_subprocess_exec",
             new=AsyncMock(side_effect=fake_create_subprocess_exec),
         ):
-            result = await _run_codex_cli("analyze this", contact_sheet)
+            result = await _run_codex_cli("analyze this", contact_sheets)
 
         args = captured["args"]
         o_index = args.index("-o")
         out_path = Path(args[o_index + 1])
         assert args == (
             "codex", "exec",
-            "-i", str(contact_sheet),
+            "-i", str(contact_sheets[0]),
+            "-i", str(contact_sheets[1]),
             "-o", str(out_path),
             "--dangerously-bypass-approvals-and-sandbox",
             "analyze this",
@@ -150,36 +152,25 @@ class TestCliTimeout:
 
 class TestAnalyzeCliPromptBranching:
     @pytest.mark.asyncio
-    async def test_claude_provider_includes_read_the_image_at(self):
+    @pytest.mark.parametrize(
+        "provider,runner_name", [("claude", "_run_claude_cli"), ("agy", "_run_agy_cli")]
+    )
+    async def test_claude_agy_providers_include_read_the_images_at(self, provider, runner_name):
         captured = {}
 
-        async def fake_run_claude(full_prompt):
+        async def fake_run(full_prompt):
             captured["prompt"] = full_prompt
             return '{"dimensions": {}, "errors": [], "usable_segments": []}'
 
-        with patch("agent.services.video_reviewer.config.CLI_PROVIDERS", {"active": "claude"}), \
+        contact_sheets = [Path("/tmp/sheet_00.jpg"), Path("/tmp/sheet_01.jpg")]
+        with patch("agent.services.video_reviewer.config.CLI_PROVIDERS", {"active": provider}), \
              patch("agent.services.video_reviewer._build_prompt", return_value="BASE_PROMPT"), \
-             patch("agent.services.video_reviewer._run_claude_cli", new=AsyncMock(side_effect=fake_run_claude)):
-            result = await _analyze_cli(Path("/tmp/sheet.png"), 10, 4.0, {})
+             patch(f"agent.services.video_reviewer.{runner_name}", new=AsyncMock(side_effect=fake_run)):
+            result = await _analyze_cli(contact_sheets, 10, 4.0, {})
 
-        assert "Read the image at" in captured["prompt"]
-        assert "BASE_PROMPT" in captured["prompt"]
-        assert result == {"dimensions": {}, "errors": [], "usable_segments": []}
-
-    @pytest.mark.asyncio
-    async def test_agy_provider_includes_read_the_image_at(self):
-        captured = {}
-
-        async def fake_run_agy(full_prompt):
-            captured["prompt"] = full_prompt
-            return '{"dimensions": {}, "errors": [], "usable_segments": []}'
-
-        with patch("agent.services.video_reviewer.config.CLI_PROVIDERS", {"active": "agy"}), \
-             patch("agent.services.video_reviewer._build_prompt", return_value="BASE_PROMPT"), \
-             patch("agent.services.video_reviewer._run_agy_cli", new=AsyncMock(side_effect=fake_run_agy)):
-            result = await _analyze_cli(Path("/tmp/sheet.png"), 10, 4.0, {})
-
-        assert "Read the image at" in captured["prompt"]
+        assert "Read the images at:" in captured["prompt"]
+        assert str(contact_sheets[0]) in captured["prompt"]
+        assert str(contact_sheets[1]) in captured["prompt"]
         assert "BASE_PROMPT" in captured["prompt"]
         assert result == {"dimensions": {}, "errors": [], "usable_segments": []}
 
@@ -187,18 +178,60 @@ class TestAnalyzeCliPromptBranching:
     async def test_codex_provider_excludes_read_the_image_at(self):
         captured = {}
 
-        async def fake_run_codex(full_prompt, contact_sheet):
+        async def fake_run_codex(full_prompt, contact_sheets):
             captured["prompt"] = full_prompt
             return '{"dimensions": {}, "errors": [], "usable_segments": []}'
 
+        contact_sheets = [Path("/tmp/sheet_00.jpg"), Path("/tmp/sheet_01.jpg")]
         with patch("agent.services.video_reviewer.config.CLI_PROVIDERS", {"active": "codex"}), \
              patch("agent.services.video_reviewer._build_prompt", return_value="BASE_PROMPT"), \
              patch("agent.services.video_reviewer._run_codex_cli", new=AsyncMock(side_effect=fake_run_codex)):
-            result = await _analyze_cli(Path("/tmp/sheet.png"), 10, 4.0, {})
+            result = await _analyze_cli(contact_sheets, 10, 4.0, {})
 
         assert "Read the image at" not in captured["prompt"]
+        assert "sequential contact sheets" in captured["prompt"]
         assert "BASE_PROMPT" in captured["prompt"]
         assert result == {"dimensions": {}, "errors": [], "usable_segments": []}
+
+    @pytest.mark.asyncio
+    async def test_single_sheet_wrapper_wording_matches_original_singular_form(self):
+        """With exactly 1 sheet, the wrapper sentence must read like the original
+        pre-multi-sheet prompt ('Read the image at <p>. It is a contact sheet of...') —
+        not the plural 'Read the images at: <p>, in that order. These are 1 sequential
+        contact sheets...' which is both grammatically wrong and misleading.
+        """
+        captured = {}
+
+        async def fake_run_claude(full_prompt):
+            captured["prompt"] = full_prompt
+            return '{"dimensions": {}, "errors": [], "usable_segments": []}'
+
+        contact_sheets = [Path("/tmp/sheet_00.jpg")]
+        with patch("agent.services.video_reviewer.config.CLI_PROVIDERS", {"active": "claude"}), \
+             patch("agent.services.video_reviewer._build_prompt", return_value="BASE_PROMPT"), \
+             patch("agent.services.video_reviewer._run_claude_cli", new=AsyncMock(side_effect=fake_run_claude)):
+            await _analyze_cli(contact_sheets, 9, 4.0, {})
+
+        assert captured["prompt"].startswith("Read the image at /tmp/sheet_00.jpg.")
+        assert "Read the images at:" not in captured["prompt"]
+        assert "sequential contact sheets" not in captured["prompt"]
+        assert "It is a contact sheet of 9 video frames at 4.0fps with timestamps." in captured["prompt"]
+
+
+# ---------------------------------------------------------------------------
+# _build_prompt :: sheet_note behavior (single-sheet vs multi-sheet)
+# ---------------------------------------------------------------------------
+
+class TestBuildPromptSheetNote:
+    def test_single_sheet_has_no_sheet_note(self):
+        result = _build_prompt(9, 4.0, 1, {"prompt": "", "video_prompt": ""})
+        assert "sequential contact sheets" not in result
+
+    def test_multi_sheet_includes_sheet_note(self):
+        result = _build_prompt(32, 4.0, 4, {"prompt": "", "video_prompt": ""})
+        assert "4 sequential contact sheets" in result
+        assert "sheet 1 is earliest" in result
+        assert "sheet 4 is latest" in result
 
 
 # ---------------------------------------------------------------------------

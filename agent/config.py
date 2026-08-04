@@ -69,6 +69,8 @@ REVIEW_MODEL = os.environ.get("REVIEW_MODEL", "claude-haiku-4-5-20251001")
 REVIEW_FPS_LIGHT = float(os.environ.get("REVIEW_FPS_LIGHT", "4"))
 REVIEW_FPS_DEEP = float(os.environ.get("REVIEW_FPS_DEEP", "8"))
 REVIEW_MAX_FRAMES = int(os.environ.get("REVIEW_MAX_FRAMES", "64"))
+REVIEW_SHEET_COLS = int(os.environ.get("REVIEW_SHEET_COLS", "3"))
+REVIEW_SHEET_ROWS = int(os.environ.get("REVIEW_SHEET_ROWS", "3"))
 
 # ─── CLI Providers (video review vision analysis) ────────────
 _PROVIDERS_FILE = Path(__file__).parent / "providers.json"
