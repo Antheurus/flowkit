@@ -22,6 +22,7 @@ curl -s http://127.0.0.1:8100/health
 |-------|-------------|
 | `/fk-create-project` | New project with entities + scenes |
 | `/fk-research` | Fact-check before scripting |
+| `/fk-storyboard-prompt` | Convert an external creative brief (client script, Gemini/ChatGPT ad concept, Midjourney/Kling-style prompts) into a Flow-Kit-compliant storyboard |
 | `/fk-gen-refs` | Generate reference images for entities |
 | `/fk-gen-images` | Generate scene images |
 | `/fk-gen-videos` | Generate scene videos |
