@@ -173,7 +173,8 @@ async def _poll_workflows(
             media_resp = await client.get_media(mid)
             status = media_resp.get("status")
             if status != 200:
-                logger.debug("Workflow media %s not ready (status=%s)", mid[:8], status)
+                logger.debug("Workflow media %s not ready (status=%s) body=%s",
+                             mid[:8], status, media_resp.get("data") or media_resp.get("error"))
                 continue
 
             # Direct top-level (not wrapped in `data`)
@@ -432,6 +433,8 @@ class OperationService:
         tier = project.get("user_paygate_tier", "PAYGATE_TIER_TWO") if project else "PAYGATE_TIER_TWO"
         pid = scene.get("_project_id", "0")
         end_id = scene.get(f"{prefix}_end_scene_media_id")
+        video_row = await crud.get_video(scene.get("video_id", ""))
+        duration_sec = (video_row or {}).get("video_duration_seconds", 8)
 
         # Chain scenes with end_image: prefer transition_prompt (describes motion between frames)
         if end_id and scene.get("transition_prompt"):
@@ -465,6 +468,7 @@ class OperationService:
             aspect_ratio=aspect,
             end_image_media_id=end_id,
             user_paygate_tier=tier,
+            duration_seconds=duration_sec,
         )
 
         if _is_error(submit_result):

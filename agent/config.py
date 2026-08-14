@@ -10,6 +10,7 @@ DB_PATH = BASE_DIR / "flow_agent.db"
 # ─── API Server ──────────────────────────────────────────────
 API_HOST = os.environ.get("API_HOST", "127.0.0.1")
 API_PORT = int(os.environ.get("API_PORT", "8100"))
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO").upper()
 
 # ─── WebSocket Server (extension connects here) ─────────────
 WS_HOST = os.environ.get("WS_HOST", "127.0.0.1")
