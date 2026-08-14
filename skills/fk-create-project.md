@@ -343,6 +343,7 @@ Write video prompts as **natural prose** — like briefing a film director. Veo 
 - Every prompt needs: lighting description + audio description
 
 **Dialogue rules:**
+- **`allow_voice: true` MUST be set on the project (`PATCH /api/projects/<PID>`) or every scene's dialogue is silently overridden.** `_build_video_prompt` (`agent/sdk/services/operations.py`) appends its own `Audio:` line to the end of every prompt based on the project's `allow_voice`/`allow_music` flags — with the default (`allow_voice: false`, unset at creation unless you pass it explicitly), it appends `"Audio: natural ambient sounds only, no background music, no narration, no voiceover."` **after** your `Character says: "..."` lines, directly contradicting them. The result is Veo 3 producing generic non-verbal vocalization instead of the written line — confirmed 2026-08-14, an entire 4-scene project generated with no line of dialogue actually spoken because this flag was never set at creation. Set it in the same `POST /api/projects` call (or PATCH immediately after) whenever the storyboard uses embedded character dialogue.
 - Use `:` format to avoid subtitles: `Character says: "line" (no subtitles)`
 - Keep short — must fit in ~8 seconds of speech
 - Describe voice: `in a deep gravelly voice`, `whispering`

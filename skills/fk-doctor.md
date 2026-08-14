@@ -168,6 +168,8 @@ Decision order — stop at first match:
 3. **`captcha` / `recaptcha`** → PENDING if retry_count < 10; else FAILED.
 4. **Default** → increment `retry_count`; if < `MAX_RETRIES` (5), schedule retry at `now + min(2^retry * 10, 300)`s. Else FAILED.
 
+**A GENERATE_VIDEO retry on the workflow-schema path is NOT a free re-poll — it resubmits a brand new generation to Flow every time.** `generate_scene_video()` (`agent/sdk/services/operations.py`) can only resume the OLD schema (`op_name` shaped like `models/.../operations/...`, re-polled via `check_video_status`); a workflow-schema `op_name` is a bare UUID that "cannot recover... need primary_media_id which isn't persisted yet" (the function's own comment) — so it falls through and calls `client.generate_video(...)` again. That comment's justification, "Low Priority is free, duplicate is OK," does NOT hold once § A2's bug is in play (retries never succeed, so `MAX_RETRIES` worth of resubmits happen for every scene, every time), and does not hold at all on a non-free tier. Confirmed 2026-08-14: repeated retries plus 3 agent restarts while diagnosing § A2 across 4 scenes produced 2-3x duplicate videos in the actual Flow project media library. **Before retrying (manually or by restarting the agent) any request on this path, check `GET /api/requests?video_id=<VID>&type=GENERATE_VIDEO` for prior attempts on the same scene first** — each is a real, separate generation that already happened, not a resumable one. If duplicates already exist, they can only be cleaned up from Flow's own UI (`labs.google/fx/tools/flow`) — there's no API-side dedup.
+
 ## Output format
 
 Always end with a prescription block:

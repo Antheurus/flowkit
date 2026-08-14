@@ -48,6 +48,8 @@ Apply the 5-component structure from `fk-camera-guide.md`: `[Camera/Shot] + [Sub
 
 **Dialogue from the brief's "voiceover" lines usually belongs here, not in a separate narrator track** — if the brief's voiceover is characters talking (not off-screen narration), convert each line to Veo 3 native dialogue: `Character says: "line" (no subtitles)`. This skips the TTS/voice-template pipeline entirely for that content. Reserve `narrator_text` (`fk-gen-narrator.md`) for genuine off-screen narration the brief separates from character speech.
 
+**If this step embeds any dialogue, `allow_voice: true` MUST be set on the project or the dialogue is silently discarded** — see the note in `fk-create-project.md` § Dialogue rules. Set it in the same `POST /api/projects` call this skill hands off to.
+
 Always close with:
 ```
 Audio: [ambient description].
