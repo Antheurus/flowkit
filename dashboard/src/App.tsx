@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter, NavLink, Routes, Route, useLocation, useParams, useSearchParams } from 'react-router-dom'
-import { LayoutDashboard, FolderOpen, Film, ScrollText, BookOpen } from 'lucide-react'
+import { LayoutDashboard, FolderOpen, Film, ScrollText, BookOpen, Clapperboard } from 'lucide-react'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { WebSocketProvider } from './api/WebSocketContext'
 import { useWebSocketContext } from './api/useWebSocketContext'
@@ -15,10 +15,12 @@ import ProjectsPage from './pages/ProjectsPage'
 import LogsPage from './pages/LogsPage'
 import GalleryPage from './pages/GalleryPage'
 import GuidePage from './pages/GuidePage'
+import StoryboardPage from './pages/StoryboardPage'
 
 const NAV: { to: string; icon: typeof LayoutDashboard; labelKey: TranslationKey; exact: boolean }[] = [
   { to: '/', icon: LayoutDashboard, labelKey: 'nav.dashboard', exact: true },
   { to: '/projects', icon: FolderOpen, labelKey: 'nav.projects', exact: false },
+  { to: '/storyboard', icon: Clapperboard, labelKey: 'nav.storyboard', exact: false },
   { to: '/gallery', icon: Film, labelKey: 'nav.gallery', exact: false },
   { to: '/logs', icon: ScrollText, labelKey: 'nav.logs', exact: false },
   { to: '/guide', icon: BookOpen, labelKey: 'nav.guide', exact: false },
@@ -184,6 +186,8 @@ function Layout() {
             <Route path="/" element={<DashboardPage />} />
             <Route path="/projects" element={<ProjectsPage />} />
             <Route path="/projects/:id" element={<ProjectsPage />} />
+            <Route path="/storyboard" element={<StoryboardPage />} />
+            <Route path="/storyboard/:id" element={<StoryboardPage />} />
             <Route path="/gallery" element={<GalleryPage />} />
             <Route path="/logs" element={<LogsPage />} />
             <Route path="/guide" element={<GuidePage />} />

@@ -46,6 +46,19 @@ export function latestRequest(requests: Request[], sceneId: string, stage: Scene
     .sort((a, b) => (b.created_at ?? '').localeCompare(a.created_at ?? ''))[0]
 }
 
+/**
+ * Total real generation calls sent for this scene+stage across ALL request rows —
+ * not just the latest row's retry_count. On the workflow-schema video path a retry
+ * resubmits a fresh generation rather than re-polling (see skills/fk-doctor.md § retry
+ * policy), so retry_count alone undercounts what actually happened. Sum retry_count+1
+ * per row (each row is itself retry_count+1 real attempts) to get the true total.
+ */
+export function attemptCount(requests: Request[], sceneId: string, stage: SceneStage): number {
+  return requests
+    .filter(r => r.scene_id === sceneId && STAGE_TYPES[stage].includes(r.type))
+    .reduce((sum, r) => sum + r.retry_count + 1, 0)
+}
+
 /** Per-video stage completion %, used by Dashboard throughput and project stage-rollup cards. */
 export function videoStageBreakdown(scenes: Scene[]): Record<SceneStage, StageCount> {
   return {

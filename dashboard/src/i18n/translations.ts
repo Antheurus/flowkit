@@ -49,6 +49,7 @@ const en = {
   // ---- nav / app shell ----
   'nav.dashboard': 'Dashboard',
   'nav.projects': 'Projects',
+  'nav.storyboard': 'Storyboard',
   'nav.gallery': 'Gallery',
   'nav.logs': 'Logs',
   'nav.guide': 'Guide',
@@ -240,6 +241,17 @@ const en = {
   'stageNode.proc': 'proc',
   'stageNode.fail': 'fail',
   'stageNode.pend': 'pend',
+
+  // ---- Storyboard page ----
+  'storyboard.loading': 'Loading storyboard...',
+  'storyboard.title': 'Storyboard',
+  'storyboard.subtitle': 'Entities, scenes, and real generation attempt counts — check here before generating again.',
+  'storyboard.entities': 'Entities ({n})',
+  'storyboard.noEntities': 'No entities yet.',
+  'storyboard.noScenes': 'No scenes yet.',
+  'storyboard.scene': 'Scene #{n}',
+  'storyboard.attempts': '{n} attempt(s)',
+  'storyboard.attempts.warning': 'More than one generation attempt was sent to Flow for this stage — check the Flow media library for duplicates before generating again.',
 
   // ---- SceneCard ----
   'sceneCard.scene': 'Scene #{n}',
@@ -886,6 +898,7 @@ const id: Partial<Record<TranslationKey, string>> = {
 
   'nav.dashboard': 'Dasbor',
   'nav.projects': 'Proyek',
+  'nav.storyboard': 'Storyboard',
   'nav.gallery': 'Galeri',
   'nav.logs': 'Log',
   'nav.guide': 'Panduan',
@@ -1069,6 +1082,16 @@ const id: Partial<Record<TranslationKey, string>> = {
   'stageNode.proc': 'proses',
   'stageNode.fail': 'gagal',
   'stageNode.pend': 'tunggu',
+
+  'storyboard.loading': 'Memuat storyboard...',
+  'storyboard.title': 'Storyboard',
+  'storyboard.subtitle': 'Entitas, scene, dan jumlah percobaan generate asli — cek di sini sebelum generate lagi.',
+  'storyboard.entities': 'Entitas ({n})',
+  'storyboard.noEntities': 'Belum ada entitas.',
+  'storyboard.noScenes': 'Belum ada scene.',
+  'storyboard.scene': 'Scene #{n}',
+  'storyboard.attempts': '{n} percobaan',
+  'storyboard.attempts.warning': 'Lebih dari satu percobaan generate sudah dikirim ke Flow untuk stage ini — cek media library Flow untuk duplikat sebelum generate lagi.',
 
   'sceneCard.scene': 'Scene #{n}',
   'sceneCard.still': 'gambar diam',
