@@ -6,7 +6,7 @@ Diagnose any FlowKit error and prescribe a fix. Knows the full error taxonomy ac
 - Any `/api/requests/*` response has `status=FAILED` or `error_message` is set
 - A request has been `PROCESSING` for > 10 minutes with no progress
 - `GET /health` returns `extension_connected: false`
-- User reports any error string containing: `UNSAFE_GENERATION`, `QUOTA`, `not found`, `CAPTCHA`, `UNUSUAL_ACTIVITY`, `NO_FLOW_KEY`, `NO_FLOW_TAB`, `extension_switched`, `Failed to fetch`, `MODEL_ACCESS_DENIED`, `PAYGATE_TIER_TWO`, `invalidTags`, `quotaExceeded`, `invalid_grant`
+- User reports any error string containing: `UNSAFE_GENERATION`, `QUOTA`, `not found`, `CAPTCHA`, `UNUSUAL_ACTIVITY`, `NO_FLOW_KEY`, `NO_FLOW_TAB`, `extension_switched`, `Failed to fetch`, `MODEL_ACCESS_DENIED`, `PAYGATE_TIER_TWO`, `invalidTags`, `quotaExceeded`, `invalid_grant`, `Workflow polling timeout`
 - User asks "why did X fail", "what's wrong with the pipeline", "why is this stuck", "tại sao X lỗi", "lỗi gì vậy"
 - An HTTP 4xx/5xx reaches the main agent from any endpoint under `127.0.0.1:8100`
 - A YouTube upload returns `HttpError` from `googleapiclient`
@@ -81,6 +81,12 @@ Match against taxonomy — even partial matches (`"not found"`, `"captcha"`, `"q
 | `reCAPTCHA failed` / (contains `captcha`) | Extension couldn't solve reCAPTCHA | Retry ≤10× without consuming `retry_count` (processor.py:454-464) | Ensure a Google Flow tab is open and focused; reload extension |
 | `PUBLIC_ERROR_UNUSUAL_ACTIVITY` (403, message `reCAPTCHA evaluation failed`) | Google flagged the session as bot-like — usually triggered by rapid bursts of submits (e.g. many GENERATE_VIDEO in <1 minute), shared/VPN IP, or stale auth cookies | NOT auto-handled — Google blocks even fresh requests until the trust signal recovers | (1) **Stop the worker / pipeline** so submits pause. (2) Open Chrome → `chrome://settings/cookies` (or the extension's Chrome profile) → search `google.com` and `labs.google` → **remove all cookies for both**. (3) Reload `https://labs.google/fx/tools/flow` and sign back in (re-solve any reCAPTCHA puzzles manually). (4) Slow down submission cadence (≥1s gap between submits, ≤5 concurrent). If still blocked, switch to a different network or wait 1–6 h |
 
+### A2. Client-side polling timeout (not a Flow error — `operations.py`)
+
+| Error contains | Diagnosis | Auto-handling | Manual fix |
+|---|---|---|---|
+| `Workflow polling timeout after 420s` | Flow returned the NEW workflow-schema response (`data.workflows` + `data.media`, `_poll_workflows` in `agent/sdk/services/operations.py`) instead of the old `operations` shape — this fires even on non-`*_low_priority` models (observed on `veo_3_1_i2v_s_fast_portrait`, `PAYGATE_TIER_ONE`). Flow hadn't errored — `get_media` just kept returning a small non-MP4 metadata payload past the 420s client-side cap. Generation with native Veo 3 dialogue/audio can genuinely take longer than 420s. | Default branch: `retry_count++`, backoff `min(2^retry*10, 300)`s, terminal FAILED at `MAX_RETRIES` (5) — each retry re-polls the same request, it does NOT resubmit a new generation | `VIDEO_POLL_TIMEOUT` env var (default `420`, `agent/config.py`) is too short for this response shape. Export a higher value (e.g. `1200`) and restart the agent (`kill` the `python -m agent.main` pid found via `lsof -nP -iTCP:8100 -sTCP:LISTEN -t`, relaunch with `VIDEO_POLL_TIMEOUT=1200` exported) **before `retry_count` hits `MAX_RETRIES`** — a restart preserves the DB row and its `retry_count`, and the worker resumes it, but a terminal FAILED needs a fresh `GENERATE_VIDEO` resubmit. Verified 2026-08-14: 4 scenes stuck at `retry_count: 4/5` for 20+ min under the 420s default resumed processing immediately after a restart with `VIDEO_POLL_TIMEOUT=1200`. |
+
 ### B. HTTP status codes
 
 | Status | Origin | When you see it |
@@ -151,6 +157,7 @@ When the user describes a symptom in plain language, map it here first.
 | YouTube upload `invalidTags` | Tag-char overflow — quote overhead counts (spaces → +2 per tag) |
 | Python `cryptography` arch mismatch | Use `python3.10`, not `python3.13` (x86/arm64 binary mismatch) |
 | `curl: (7) Failed to connect to 127.0.0.1:8100` | Agent not running — `python -m agent.main` |
+| GENERATE_VIDEO stuck `PROCESSING`, `error_message` says `Workflow polling timeout after 420s` | Real generation outlasting the 420s poll cap on Flow's newer workflow-schema response (see § A2) — restart agent with `VIDEO_POLL_TIMEOUT=1200` before `retry_count` hits `MAX_RETRIES` |
 
 ## Worker retry policy (`processor.py:_handle_failure`)
 
