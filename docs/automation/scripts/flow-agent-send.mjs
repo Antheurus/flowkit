@@ -14,6 +14,7 @@
 // CONFIRMED behaviourally: typing must flip the submit button from disabled to enabled. If it
 // does not, the script stops and reports, rather than trying another selector.
 
+import fs from 'node:fs';
 import { chromium } from '/Users/macbook/Documents/PROJECT_MISPAQUL_ATTORIQ/cc-toriq/node_modules/patchright/index.mjs';
 
 const PROFILE = '/Users/macbook/Documents/PROJECT_MISPAQUL_ATTORIQ/flowkit/docs/profile/patchright-flow';
@@ -95,6 +96,29 @@ try {
 }
 console.log('SUBMIT_ENABLED_AFTER: true  (confirms the composer was correct)');
 
+// ── Capture the Agent's own network contract ──────────────────────────────
+// The point of this whole script is to learn the request so PRODUCTION can replay it
+// through the extension's existing api_request/trpc_request path instead of driving a
+// browser. Bodies are kept verbatim; Authorization/Cookie are redacted because this output
+// is read by a human and must never carry a live bearer token.
+const REDACT = new Set(['authorization', 'cookie', 'x-goog-api-key', 'set-cookie']);
+const captured = [];
+page.on('request', (req) => {
+  const url = req.url();
+  if (!/labs\.google\/fx\/api|aisandbox-pa\.googleapis\.com/.test(url)) return;
+  if (req.method() === 'GET') return;
+  const headers = {};
+  for (const [k, v] of Object.entries(req.headers())) {
+    headers[k] = REDACT.has(k.toLowerCase()) ? '<<REDACTED>>' : v;
+  }
+  captured.push({
+    method: req.method(),
+    url,
+    headers,
+    body: (req.postData() || '').slice(0, 20000),
+  });
+});
+
 const before = await page.evaluate(() => document.body.innerText.length);
 await submit.click();
 console.log('SUBMITTED');
@@ -117,6 +141,17 @@ for (let i = 0; i < 36; i++) {
   }
 }
 
+// Persist the captured contract for sla-codify / the extension implementation.
+// captures/ is gitignored: bodies are verbatim and may carry project-identifying data.
+const capDir = '/Users/macbook/Documents/PROJECT_MISPAQUL_ATTORIQ/flowkit/docs/automation/captures';
+fs.mkdirSync(capDir, { recursive: true });
+const capPath = `${capDir}/flow-agent-submit.json`;
+fs.writeFileSync(capPath, JSON.stringify(captured, null, 2));
+console.log('CAPTURED_REQUESTS:', captured.length, '->', capPath);
+for (const c of captured) {
+  console.log(`  ${c.method} ${c.url.slice(0, 130)}`);
+}
+
 await ctx.storageState({ path: `${PROFILE}/storage-state.json` });
-console.log('HOLDING_OPEN');
-await new Promise(() => {});
+console.log('DONE');
+await ctx.close();

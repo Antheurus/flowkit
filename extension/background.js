@@ -445,6 +445,12 @@ async function handleApiRequest(msg) {
       if (finalBody.clientContext?.recaptchaContext) {
         finalBody.clientContext.recaptchaContext.token = captchaToken;
       }
+      // flowCreationAgent:streamChat nests its context under agentClientContext, not
+      // clientContext. Without this branch the token is silently never injected and the
+      // call fails as if the captcha had not been solved at all.
+      if (finalBody.agentClientContext?.recaptchaContext) {
+        finalBody.agentClientContext.recaptchaContext.token = captchaToken;
+      }
       if (finalBody.requests && Array.isArray(finalBody.requests)) {
         for (const req of finalBody.requests) {
           if (req.clientContext?.recaptchaContext) {
