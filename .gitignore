@@ -22,3 +22,10 @@ ds-bundle/
 .design-sync/.cache/
 .design-sync/learnings/
 .design-sync/node_modules
+
+# Browser automation: live session credentials + scratch artifacts. NEVER commit.
+# docs/profile/ holds a persistent Chrome profile with a real Google login.
+docs/profile/
+.playwright-cli/
+docs/automation/.env
+docs/automation/captures/
