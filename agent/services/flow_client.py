@@ -638,6 +638,39 @@ class FlowClient:
             "body": body,
         }, timeout=30)  # No captcha needed
 
+    async def chat_with_agent(self, prompt: str, project_id: str,
+                              agent_session_id: str, turn_number: int = 1,
+                              timeout: float = 900) -> dict:
+        """Send one turn to Flow's in-project creation agent.
+
+        The agent generates asynchronously, so a returned turn does not mean media exists —
+        poll project media afterwards.
+        """
+        body = {
+            "agentSessionId": agent_session_id,
+            "agentClientContext": {
+                "projectId": f"projects/{project_id}",
+                "clientSessionId": f";{int(time.time() * 1000)}",
+                "recaptchaContext": {
+                    "applicationType": "RECAPTCHA_APPLICATION_TYPE_WEB",
+                    "token": "",  # Extension injects real token
+                },
+                "turnNumber": turn_number,
+            },
+            "userMessage": {"userPrompt": {"parts": [{"text": prompt}]}},
+        }
+
+        headers = random_headers()
+        headers["accept"] = "text/event-stream"
+
+        return await self._send("api_request", {
+            "url": f"{GOOGLE_FLOW_API}{ENDPOINTS['agent_chat']}",
+            "method": "POST",
+            "headers": headers,
+            "body": body,
+            "captchaAction": "IMAGE_GENERATION",
+        }, timeout=timeout)
+
     async def get_credits(self) -> dict:
         """Get user credits and tier."""
         url = self._build_url("get_credits")

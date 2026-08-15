@@ -1,10 +1,46 @@
 """Direct Flow API endpoints — for manual operations outside the queue."""
+import json
+import uuid
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional
 from agent.services.flow_client import get_flow_client
 
 router = APIRouter(prefix="/flow", tags=["flow"])
+
+
+class AgentChatRequest(BaseModel):
+    prompt: str
+    project_id: str
+    agent_session_id: str | None = None
+    turn_number: int = 1
+
+
+def parse_sse(payload) -> list:
+    """Parse a text/event-stream body into its JSON data frames.
+
+    The extension returns the whole stream as one string because the response is only read
+    after it closes, so this splits rather than streams. Non-JSON frames are kept verbatim so
+    an unexpected shape is visible instead of silently dropped.
+    """
+    if isinstance(payload, (dict, list)):
+        return [payload]
+    if not isinstance(payload, str):
+        return []
+
+    events = []
+    for line in payload.splitlines():
+        line = line.strip()
+        if not line.startswith("data:"):
+            continue
+        chunk = line[5:].strip()
+        if not chunk or chunk == "[DONE]":
+            continue
+        try:
+            events.append(json.loads(chunk))
+        except json.JSONDecodeError:
+            events.append({"raw": chunk})
+    return events
 
 
 class GenerateImageRequest(BaseModel):
@@ -79,6 +115,35 @@ async def get_credits():
     if result.get("error"):
         raise HTTPException(502, result["error"])
     return result.get("data", result)
+
+
+@router.post("/agent-chat")
+async def agent_chat(body: AgentChatRequest):
+    """Send one turn to Flow's in-project creation agent (bypasses queue).
+
+    Returns the parsed SSE frames plus the session id and next turn number, which the caller
+    must echo back to continue the same conversation.
+    """
+    client = get_flow_client()
+    if not client.connected:
+        raise HTTPException(503, "Extension not connected")
+
+    session_id = body.agent_session_id or str(uuid.uuid4())
+    result = await client.chat_with_agent(
+        prompt=body.prompt,
+        project_id=body.project_id,
+        agent_session_id=session_id,
+        turn_number=body.turn_number,
+    )
+    if result.get("error") or (isinstance(result.get("status"), int) and result["status"] >= 400):
+        raise HTTPException(result.get("status", 502), result.get("error", result.get("data")))
+
+    return {
+        "agent_session_id": session_id,
+        "turn_number": body.turn_number,
+        "next_turn_number": body.turn_number + 1,
+        "events": parse_sse(result.get("data")),
+    }
 
 
 @router.post("/generate-image")

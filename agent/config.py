@@ -41,6 +41,8 @@ IMAGE_MODELS = _MODELS["image_models"]
 
 # ─── API Endpoints ───────────────────────────────────────────
 ENDPOINTS = {
+    # Authenticates by bearer alone, with no ?key= param — so it must bypass _build_url().
+    "agent_chat": "/v1/flowCreationAgent:streamChat?alt=sse",
     "generate_images": "/v1/projects/{project_id}/flowMedia:batchGenerateImages",
     "generate_video": "/v1/video:batchAsyncGenerateVideoStartImage",
     "generate_video_start_end": "/v1/video:batchAsyncGenerateVideoStartAndEndImage",
