@@ -17,16 +17,16 @@
 import { chromium } from '/Users/macbook/Documents/PROJECT_MISPAQUL_ATTORIQ/cc-toriq/node_modules/patchright/index.mjs';
 
 const PROFILE = '/Users/macbook/Documents/PROJECT_MISPAQUL_ATTORIQ/flowkit/docs/profile/patchright-flow';
-const PROJECT_URL =
-  'https://labs.google/fx/id/tools/flow/project/94cc55f7-ebd5-4123-b12a-c8bf8cabf9ff';
 const SUBMIT_NAME = 'arrow_forward Buat';
 const PLACEHOLDER = 'Apa yang ingin Anda buat';
 
 const message = process.argv[2];
-if (!message) {
-  console.error('usage: node flow-agent-send.mjs "<message>"');
+const projectId = process.argv[3] || process.env.FK_PROJECT_ID;
+if (!message || !projectId) {
+  console.error('usage: node flow-agent-send.mjs "<message>" <project_id>');
   process.exit(2);
 }
+const PROJECT_URL = `https://labs.google/fx/id/tools/flow/project/${projectId}`;
 
 const ctx = await chromium.launchPersistentContext(PROFILE, {
   headless: false,

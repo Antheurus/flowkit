@@ -9,8 +9,8 @@
 import { chromium } from '/Users/macbook/Documents/PROJECT_MISPAQUL_ATTORIQ/cc-toriq/node_modules/patchright/index.mjs';
 
 const PROFILE = '/Users/macbook/Documents/PROJECT_MISPAQUL_ATTORIQ/flowkit/docs/profile/patchright-flow';
-const PROJECT_URL =
-  'https://labs.google/fx/id/tools/flow/project/94cc55f7-ebd5-4123-b12a-c8bf8cabf9ff';
+const projectId = process.argv[2] || process.env.FK_PROJECT_ID || '94cc55f7-ebd5-4123-b12a-c8bf8cabf9ff';
+const PROJECT_URL = `https://labs.google/fx/id/tools/flow/project/${projectId}`;
 
 const ctx = await chromium.launchPersistentContext(PROFILE, {
   headless: false,
