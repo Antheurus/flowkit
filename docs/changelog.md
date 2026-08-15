@@ -1,5 +1,13 @@
 # Flow Kit Changelog
 
+## v1.2.0 — Flow's own AI agent can now be used to build scenes
+
+- **You can now have Flow's built-in AI agent build your scenes**, instead of only sending generation requests at it directly. In practice it's noticeably better: given a character reference it rewrites the prompts itself, keeps the right characters attached, and holds the look consistent from shot to shot. In this release it fixed two frames where a character had drifted into looking like a completely different creature.
+- **Fixed:** a bug that would have stopped the agent from working at all — the security check token wasn't being attached to its requests, which fails in a way that looks like the security check itself is broken. Nothing to do on your side; the extension handles it.
+- **Note on signing in:** exported browser cookies are *not* enough to use the agent. They let pages load and look logged in, then the first real action gets bounced back to the sign-in screen. It needs a normal one-time Google sign-in, after which it's remembered.
+- **Heads up if you generate images through the agent:** images it creates need to be brought back into your project before video generation will use them — Flow's internal IDs don't carry over. This release does that for you when asked.
+- Still open: video generation can hang on the known "Workflow polling timeout" issue, and every retry starts a **brand-new paid generation**. Check attempt counts on the Storyboard page before retrying.
+
 ## v1.1.0 — New Storyboard page, and two real bugs found + fixed
 
 - **New "Storyboard" page** in the dashboard nav — shows every scene's status and, critically, how many times a real generation was actually sent to Flow for it (not just the current retry count). Built directly in response to finding out video generation had been silently duplicated 2-5x per scene; check this page before generating anything again.
