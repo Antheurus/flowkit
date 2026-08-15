@@ -56,14 +56,43 @@ controls.forEach((l, i) => console.log(`${String(i).padStart(3)}  ${l.trim().sli
 console.log('=== COMPOSER REGION (tail of aria snapshot) ===');
 console.log(lines.slice(-40).join('\n'));
 
-// How many generated-image cards does the project hold right now? Scroll the media pane so
-// virtualised cards mount, then count by the card's own accessible name.
-for (let i = 0; i < 12; i++) {
-  await page.mouse.wheel(0, 2000);
-  await page.waitForTimeout(400);
+// Enumerate every media card: its media_id (from the /edit/<uuid> permalink) plus the prompt
+// text it was generated with. The list is virtualised, so scroll until the discovered count
+// stops growing rather than scrolling a fixed number of times.
+let seen = 0, stable = 0;
+for (let i = 0; i < 40 && stable < 4; i++) {
+  await page.mouse.wheel(0, 1800);
+  await page.waitForTimeout(350);
+  const n = await page.locator('a[href*="/edit/"]').count();
+  if (n === seen) stable++;
+  else { seen = n; stable = 0; }
 }
-const cards = await page.getByRole('button', { name: 'Gambar yang dihasilkan', exact: true }).count();
-console.log('GENERATED_IMAGE_CARDS:', cards);
+
+// Scraping the <img> src failed twice (edit-links are a different id space; srcs are not
+// plain URLs), so stop guessing at the DOM and use the card's own Download control — an
+// accessible name read from the live a11y tree — plus Playwright's download event.
+// Flow lists newest first, so the agent's two new frames lead; that ordering is CONFIRMED by
+// looking at the downloaded files, never assumed.
+const dl = page.getByRole('button', { name: 'download Download', exact: true });
+const total = await dl.count();
+console.log('DOWNLOAD_BUTTONS:', total);
+
+const grabbed = [];
+for (let i = 0; i < Math.min(3, total); i++) {
+  try {
+    const [download] = await Promise.all([
+      page.waitForEvent('download', { timeout: 45000 }),
+      dl.nth(i).click(),
+    ]);
+    const dest = `/tmp/fk_review/flow_card_${i}.png`;
+    await download.saveAs(dest);
+    grabbed.push({ i, dest, suggested: download.suggestedFilename() });
+    console.log(`DOWNLOADED ${i} -> ${dest} (${download.suggestedFilename()})`);
+  } catch (e) {
+    console.log(`DOWNLOAD ${i} FAILED: ${e.message.split('\n')[0]}`);
+  }
+}
+console.log('GRABBED:', JSON.stringify(grabbed));
 
 const shot = '/tmp/fk_review/flow_project_state.png';
 await page.screenshot({ path: shot, fullPage: false });
