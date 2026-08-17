@@ -117,7 +117,7 @@ export default function ProjectDetailPage({ projectId, onBack }: Props) {
         </TabsList>
 
         <TabsContent value="overview" className="pt-4">
-          <div className="grid gap-4" style={{ gridTemplateColumns: '1.4fr 1fr' }}>
+          <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4">
             <Card className="py-4">
               <CardHeader>
                 <CardTitle className="text-xs tracking-widest uppercase">{t('projectDetail.card.projectFields')}</CardTitle>

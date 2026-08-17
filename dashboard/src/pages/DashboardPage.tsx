@@ -129,7 +129,7 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-5">
       {/* KPI cards */}
-      <div className="grid grid-cols-4 gap-3.5">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3.5">
         {kpis.map(k => (
           <Card key={k.id} className="py-4 gap-2">
             <CardHeader>
@@ -145,7 +145,7 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      <div className="grid gap-4 items-start" style={{ gridTemplateColumns: '1.55fr 1fr' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-[1.55fr_1fr] gap-4 items-start">
         {/* Throughput table */}
         <Card className="py-4">
           <CardHeader>
@@ -156,24 +156,25 @@ export default function DashboardPage() {
             {throughputRows.length === 0 ? (
               <div className="text-xs py-6 text-center" style={{ color: 'var(--muted)' }}>{t('dashboard.throughput.empty')}</div>
             ) : (
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-3 overflow-x-auto">
                 {throughputRows.map(r => (
-                  <div key={r.video.id} className="flex items-center gap-3.5 cursor-pointer" onClick={() => navigate(`/projects/${r.video.projectId}?tab=videos`)}>
-                    <div className="flex flex-col min-w-0" style={{ width: 160 }}>
+                  <div key={r.video.id} className="flex items-center gap-3.5 cursor-pointer min-w-fit" onClick={() => navigate(`/projects/${r.video.projectId}?tab=videos`)}>
+                    <div className="flex flex-col min-w-0 flex-shrink-0" style={{ width: 160 }}>
                       <span className="text-[11px] truncate">{r.video.title}</span>
                       <span className="text-[9px] tracking-wide truncate" style={{ color: 'var(--muted)' }}>{r.video.projectName}</span>
                     </div>
                     {(['image', 'video', 'upscale'] as const).map(stage => {
                       const c = r.breakdown[stage]
                       const pct = r.total > 0 ? Math.round((c.done / r.total) * 100) : 0
+                      const stageColor = pct === 100 ? 'var(--green)' : pct === 0 ? 'var(--muted)' : 'var(--yellow)'
                       return (
-                        <div key={stage} className="flex flex-col gap-1" style={{ width: 76 }}>
-                          <span className="text-[10px]" style={{ color: pct === 100 ? 'var(--green)' : pct === 0 ? 'var(--muted)' : 'var(--yellow)' }}>{pct}%</span>
-                          <Progress value={pct} className="h-1" />
+                        <div key={stage} className="flex flex-col gap-1 flex-shrink-0" style={{ width: 76 }}>
+                          <span className="text-[10px]" style={{ color: stageColor }}>{pct}%</span>
+                          <Progress value={pct} className="h-1" indicatorColor={stageColor} />
                         </div>
                       )
                     })}
-                    <Badge variant={r.state === 'COMPLETED' ? 'secondary' : r.state === 'RUNNING' ? 'default' : 'outline'} className="ml-auto">
+                    <Badge variant={r.state === 'COMPLETED' ? 'secondary' : r.state === 'RUNNING' ? 'default' : 'outline'} className="ml-auto flex-shrink-0">
                       {stateLabel(t, r.state)}
                     </Badge>
                   </div>

@@ -1,5 +1,43 @@
 # Flow Kit Progress
 
+## Session — 2026-08-17 (cont 4) — v1.2.5 (dashboard no longer breaks below ~1000px)
+
+User pasted a screenshot of the dashboard looking cut off and asked to fix it. The screenshot showed
+only one KPI card, a truncated Pipeline Throughput row, and no Needs Attention panel — the shape of a
+window narrower than the page needs. Reproduced it live against the running dev server (already up on
+5173) rather than guessing: at 1000px everything still fit, but the KPI row (`grid-cols-4`, no
+breakpoint) and the two-column body row (`gridTemplateColumns: '1.55fr 1fr'`, also no breakpoint) both
+had zero responsive handling, unlike `VideoGallery.tsx`'s `grid-cols-2 md:grid-cols-3 lg:grid-cols-4`
+and the `repeat(auto-fill, minmax(...))` pattern used on Projects/Storyboard/Characters — so this was
+the one screen in the app that hadn't picked up the house responsive pattern. Below ~700px the
+Pipeline Throughput row's fixed `width: 160`/`width: 76` inline styles made it worse: flex-shrink
+default let the row compress the video title down to "Ji…" while still fitting on one line, which
+reads as broken truncation rather than a layout that adapted.
+
+Fix: `DashboardPage.tsx` KPI grid is now `grid-cols-2 xl:grid-cols-4`; the throughput/attention row is
+`grid-cols-1 lg:grid-cols-[1.55fr_1fr]` so it stacks instead of squeezing; the throughput row's name
+and per-stage columns got `flex-shrink-0` plus an `overflow-x-auto` wrapper, so a genuinely narrow
+window scrolls that one row horizontally instead of truncating video titles to two letters. Same
+`gridTemplateColumns` fixed-ratio-no-breakpoint bug existed in `ProjectDetailPage.tsx`'s Overview tab
+(`1.4fr 1fr`) — fixed identically since it's the same defect class. Separately, while comparing the
+throughput row to the screenshot: `Progress`'s indicator was hardcoded `bg-primary` regardless of
+`value`, so a 100%-complete stage's bar stayed the same blue as a 0% one while the percentage label
+beside it was already color-coded green/yellow/muted — added an optional `indicatorColor` prop
+(default unchanged) and wired it at the one call site where the mismatch was visible; the other three
+`<Progress>` call sites (StageNode, ProjectDetailPage's two stage-rollup grids) have no adjacent
+color-coded label, so left them on the default blue rather than inventing a semantic that wasn't there.
+
+Verified live at 1280/900/768/640/430px both before and after: KPI cards now hold 2-up down to a
+narrow window instead of wrapping "SCENES IN FLIGHT" onto three lines, the body row stacks to one
+column below 1024px instead of squeezing, and Progress bars now change color at each breakpoint
+matching the percentage text. 640px and below still needs a horizontal scroll to see the third stage
+column and the badge on the Pipeline Throughput row (by design, not squeeze) — deliberately did not
+touch the sidebar's fixed 208px width or build a mobile nav collapse, since this is a desktop ops
+console with a browser-extension dependency and true phone-width support wasn't asked for; noted as a
+scope boundary, not silently dropped. `bun run build` (tsc -b && vite build): clean, no type errors.
+
+---
+
 ## Session — 2026-08-17 (cont 3) — v1.2.4 (one design-token namespace, one shipped typeface)
 
 Started as a plain question — which libraries the dashboard styles with — and the inventory itself

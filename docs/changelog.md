@@ -1,5 +1,12 @@
 # Flow Kit Changelog
 
+## v1.2.5 — Dashboard no longer breaks when the window is narrower than full-screen
+
+- **The dashboard home screen now adapts to a smaller window** instead of squeezing content down to unreadable fragments or cutting it off entirely. Resize the browser (or use it on a smaller monitor) and the stat cards and panels now stack cleanly instead of overlapping the edge of the screen.
+- **The pipeline progress bars now change color to match their percentage label** — a stage that just hit 100% now shows a green bar, not the same blue as one still in progress.
+- Same narrow-window fix applied to the Project Detail page's Overview tab.
+- **Still narrow-screen only:** on a genuinely phone-width window the sidebar and one row of the pipeline table still need a small side-scroll to see everything — this is a desktop tool and full mobile support wasn't part of this pass.
+
 ## v1.2.4 — Progress bars read correctly again, and the dashboard finally ships its own font
 
 - **Empty progress bars no longer look full.** The track behind every progress bar was painting a solid light-grey band, so a stage sitting at 0/7 looked like a bar with something in it. Tracks are now a dark, recessed line — the blue fill is the only thing you see.
