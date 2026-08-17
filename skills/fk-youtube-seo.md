@@ -7,9 +7,9 @@ Usage: `/fk-youtube-seo <project_id> [--language vi] [--niche military-documenta
 ## Step 1: Load project context + channel rules
 
 ```bash
-curl -s http://127.0.0.1:8100/api/projects/<PID>
-curl -s "http://127.0.0.1:8100/api/videos?project_id=<PID>"
-curl -s "http://127.0.0.1:8100/api/scenes?video_id=<VID>"
+curl -s http://127.0.0.1:8743/api/projects/<PID>
+curl -s "http://127.0.0.1:8743/api/videos?project_id=<PID>"
+curl -s "http://127.0.0.1:8743/api/scenes?video_id=<VID>"
 ```
 
 Extract:
@@ -313,7 +313,7 @@ Also save a backup copy to project directory for reference:
 
 ```bash
 # Get project output directory
-PROJ_OUT=$(curl -s http://127.0.0.1:8100/api/projects/<PID>/output-dir)
+PROJ_OUT=$(curl -s http://127.0.0.1:8743/api/projects/<PID>/output-dir)
 OUTDIR=$(echo "$PROJ_OUT" | python3 -c "import sys,json; print(json.load(sys.stdin)['path'])")
 cat > "${OUTDIR}/youtube_seo.md" << 'EOF'
 {all_metadata_formatted}

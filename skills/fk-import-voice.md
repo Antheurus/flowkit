@@ -10,7 +10,7 @@ Register an existing WAV file as a reusable voice template for narration. Auto-t
 
 ## Prerequisites
 
-- GLA server running: `curl http://127.0.0.1:8100/health`
+- GLA server running: `curl http://127.0.0.1:8743/health`
 - `faster-whisper` installed in `/opt/homebrew/bin/python3.10`
 - WAV file placed in `output/_shared/tts_templates/`
 
@@ -77,7 +77,7 @@ Template name: derive from filename (e.g., `vi_male_narrator.wav` → `vi_male_n
 ### Step 4: Verify via API
 
 ```bash
-curl -s http://127.0.0.1:8100/api/tts/templates
+curl -s http://127.0.0.1:8743/api/tts/templates
 # Should list the new template
 ```
 
@@ -86,7 +86,7 @@ curl -s http://127.0.0.1:8100/api/tts/templates
 Generate a short test sentence using the imported voice:
 
 ```bash
-curl -s -X POST http://127.0.0.1:8100/api/tts/generate \
+curl -s -X POST http://127.0.0.1:8743/api/tts/generate \
   -H "Content-Type: application/json" \
   -d '{
     "text": "<SHORT_TEST_SENTENCE_IN_SAME_LANGUAGE>",

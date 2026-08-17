@@ -15,7 +15,7 @@ from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 import urllib.request
 
-API_BASE = "http://127.0.0.1:8100"
+API_BASE = "http://127.0.0.1:8743"
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8200
 
 TOOLS_DIR = Path(__file__).parent

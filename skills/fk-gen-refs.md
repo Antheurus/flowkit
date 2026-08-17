@@ -7,14 +7,14 @@ If no project_id provided, use `GET /api/active-project` or list projects via `G
 ## Step 1: Check health
 
 ```bash
-curl -s http://127.0.0.1:8100/health
+curl -s http://127.0.0.1:8743/health
 ```
 Must have `extension_connected: true`. Abort if not.
 
 ## Step 2: Get entities
 
 ```bash
-curl -s http://127.0.0.1:8100/api/projects/<PID>/characters
+curl -s http://127.0.0.1:8743/api/projects/<PID>/characters
 ```
 
 Filter to entities that do NOT yet have `media_id` (UUID format `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`). Never use `CAMS...` strings — those are `mediaGenerationId`, not `media_id`. Skip entities already done.
@@ -28,7 +28,7 @@ Filter to entities that do NOT yet have `media_id` (UUID format `xxxxxxxx-xxxx-x
 The server handles throttling automatically (max 5 concurrent, 10s cooldown). Submit everything in one batch call:
 
 ```bash
-curl -X POST http://127.0.0.1:8100/api/requests/batch \
+curl -X POST http://127.0.0.1:8743/api/requests/batch \
   -H "Content-Type: application/json" \
   -d '{
     "requests": [
@@ -43,7 +43,7 @@ Build the `requests` array from ALL entities missing `media_id` in Step 2. Do NO
 Poll aggregate status every 15s until done:
 
 ```bash
-curl -s "http://127.0.0.1:8100/api/requests/batch-status?project_id=<PID>&type=GENERATE_CHARACTER_IMAGE"
+curl -s "http://127.0.0.1:8743/api/requests/batch-status?project_id=<PID>&type=GENERATE_CHARACTER_IMAGE"
 # Wait for: "done": true
 # If "all_succeeded": false → some failed, check individual failures
 ```
@@ -51,7 +51,7 @@ curl -s "http://127.0.0.1:8100/api/requests/batch-status?project_id=<PID>&type=G
 ## Step 4: Verify
 
 ```bash
-curl -s http://127.0.0.1:8100/api/projects/<PID>/characters
+curl -s http://127.0.0.1:8743/api/projects/<PID>/characters
 ```
 
 Print results table:
@@ -70,12 +70,12 @@ For each failed entity, rewrite `image_prompt` to show **left side three-quarter
 
 ```bash
 # Update image_prompt to left-side profile
-curl -s -X PATCH http://127.0.0.1:8100/api/characters/<CID> \
+curl -s -X PATCH http://127.0.0.1:8743/api/characters/<CID> \
   -H "Content-Type: application/json" \
   -d '{"image_prompt": "<rewritten prompt with left side three-quarter profile view>"}'
 
 # Regenerate with new prompt
-curl -s -X POST http://127.0.0.1:8100/api/requests \
+curl -s -X POST http://127.0.0.1:8743/api/requests \
   -H "Content-Type: application/json" \
   -d '{"type": "REGENERATE_CHARACTER_IMAGE", "character_id": "<CID>", "project_id": "<PID>"}'
 ```
@@ -92,12 +92,12 @@ If left-side profile still triggers UNSAFE_GENERATION, escalate to **full back v
 
 ```bash
 # Update image_prompt to back view
-curl -s -X PATCH http://127.0.0.1:8100/api/characters/<CID> \
+curl -s -X PATCH http://127.0.0.1:8743/api/characters/<CID> \
   -H "Content-Type: application/json" \
   -d '{"image_prompt": "<rewritten prompt with back view>"}'
 
 # Regenerate
-curl -s -X POST http://127.0.0.1:8100/api/requests \
+curl -s -X POST http://127.0.0.1:8743/api/requests \
   -H "Content-Type: application/json" \
   -d '{"type": "REGENERATE_CHARACTER_IMAGE", "character_id": "<CID>", "project_id": "<PID>"}'
 ```
@@ -113,7 +113,7 @@ curl -s -X POST http://127.0.0.1:8100/api/requests \
 If back view still fails, strip all identifying details:
 
 ```bash
-curl -s -X PATCH http://127.0.0.1:8100/api/characters/<CID> \
+curl -s -X PATCH http://127.0.0.1:8743/api/characters/<CID> \
   -H "Content-Type: application/json" \
   -d '{"image_prompt": "Single reference image of an elderly man seen from behind, [hair color] hair, [build] build, [clothing only]. Back view showing full silhouette. Photorealistic studio lighting, neutral grey background."}'
 ```

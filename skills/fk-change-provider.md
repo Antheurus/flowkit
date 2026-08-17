@@ -12,7 +12,7 @@ Usage:
 ## Step 1: Show Current Status
 
 ```bash
-curl -s "http://127.0.0.1:8100/api/providers?live=true" | python3 -m json.tool
+curl -s "http://127.0.0.1:8743/api/providers?live=true" | python3 -m json.tool
 ```
 
 Display in a readable table:
@@ -36,7 +36,7 @@ For any provider with `installed: false`, list it as unavailable with a note lik
 ## Step 3: Change the Provider
 
 ```bash
-curl -X PATCH http://127.0.0.1:8100/api/providers \
+curl -X PATCH http://127.0.0.1:8743/api/providers \
   -H "Content-Type: application/json" \
   -d '{"active": "<provider>"}'
 ```
@@ -49,7 +49,7 @@ curl -X PATCH http://127.0.0.1:8100/api/providers \
 After changing, verify the update took effect:
 
 ```bash
-curl -s "http://127.0.0.1:8100/api/providers?live=true" | python3 -m json.tool
+curl -s "http://127.0.0.1:8743/api/providers?live=true" | python3 -m json.tool
 ```
 
 Confirm the `active` field now matches the provider you selected.

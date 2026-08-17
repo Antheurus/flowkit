@@ -8,7 +8,7 @@ Diagnose any FlowKit error and prescribe a fix. Knows the full error taxonomy ac
 - `GET /health` returns `extension_connected: false`
 - User reports any error string containing: `UNSAFE_GENERATION`, `QUOTA`, `not found`, `CAPTCHA`, `UNUSUAL_ACTIVITY`, `NO_FLOW_KEY`, `NO_FLOW_TAB`, `extension_switched`, `Failed to fetch`, `MODEL_ACCESS_DENIED`, `PAYGATE_TIER_TWO`, `invalidTags`, `quotaExceeded`, `invalid_grant`, `Workflow polling timeout`
 - User asks "why did X fail", "what's wrong with the pipeline", "why is this stuck", "tại sao X lỗi", "lỗi gì vậy"
-- An HTTP 4xx/5xx reaches the main agent from any endpoint under `127.0.0.1:8100`
+- An HTTP 4xx/5xx reaches the main agent from any endpoint under `127.0.0.1:8743`
 - A YouTube upload returns `HttpError` from `googleapiclient`
 - `cryptography` / architecture / import errors surface during setup
 
@@ -36,14 +36,14 @@ You are the on-call doctor for the FlowKit pipeline. Never guess — always cons
 
 ```bash
 # Health
-curl -s http://127.0.0.1:8100/health
-curl -s http://127.0.0.1:8100/api/flow/status
+curl -s http://127.0.0.1:8743/health
+curl -s http://127.0.0.1:8743/api/flow/status
 
 # Recent failures
-curl -s "http://127.0.0.1:8100/api/requests?status=FAILED&limit=20"
+curl -s "http://127.0.0.1:8743/api/requests?status=FAILED&limit=20"
 
 # Stuck in PROCESSING > 10 min
-curl -s "http://127.0.0.1:8100/api/requests?status=PROCESSING"
+curl -s "http://127.0.0.1:8743/api/requests?status=PROCESSING"
 ```
 
 Bucket the failures by `error_message` prefix, print a table, and for each bucket give the fix from the taxonomy.
@@ -51,7 +51,7 @@ Bucket the failures by `error_message` prefix, print a table, and for each bucke
 ## Mode 2: Single request (`/fk-doctor <RID>`)
 
 ```bash
-curl -s http://127.0.0.1:8100/api/requests/<RID>
+curl -s http://127.0.0.1:8743/api/requests/<RID>
 ```
 
 Read:
@@ -135,7 +135,7 @@ Detection lives in `agent/worker/_parsing.py:_is_error`. A result is treated as 
 |-------|-------|-----|
 | `ImportError: incompatible architecture (have 'arm64', need 'x86_64')` | Python 3.13 arch mismatch with `cryptography` | Use `python3.10` — all ML libs need it (per memory `check_skills_first`) |
 | `ffprobe` exit 1 on a file still growing | File not finalized | Wait for background encode to complete |
-| `curl: (7) Failed to connect to 127.0.0.1:8100` | Agent not running | `python -m agent.main` |
+| `curl: (7) Failed to connect to 127.0.0.1:8743` | Agent not running | `python -m agent.main` |
 
 ### F. Common symptoms → fix (quick lookup)
 
@@ -156,7 +156,7 @@ When the user describes a symptom in plain language, map it here first.
 | Expired GCS signed URLs | Run `/fk-refresh-urls` to regenerate |
 | YouTube upload `invalidTags` | Tag-char overflow — quote overhead counts (spaces → +2 per tag) |
 | Python `cryptography` arch mismatch | Use `python3.10`, not `python3.13` (x86/arm64 binary mismatch) |
-| `curl: (7) Failed to connect to 127.0.0.1:8100` | Agent not running — `python -m agent.main` |
+| `curl: (7) Failed to connect to 127.0.0.1:8743` | Agent not running — `python -m agent.main` |
 | GENERATE_VIDEO stuck `PROCESSING`/`FAILED`, `error_message` says `Workflow polling timeout after <N>s` | NOT a timing issue — `get_media` is returning a permanent `400 INVALID_ARGUMENT` for this media id, not "still generating" (see § A2). Raising `VIDEO_POLL_TIMEOUT` will not help. Open the project in `labs.google/fx/tools/flow` in Chrome to trigger the passive TRPC intercept and recover the real media URL |
 
 ## Worker retry policy (`processor.py:_handle_failure`)

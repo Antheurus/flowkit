@@ -12,7 +12,7 @@ Usage:
 ## Step 1: List Available Projects
 
 ```bash
-curl -s http://127.0.0.1:8100/api/projects | python3 -c "
+curl -s http://127.0.0.1:8743/api/projects | python3 -c "
 import sys, json
 projects = json.load(sys.stdin)
 print(f'{'#':>3}  {'Name':40} {'ID':36}  {'Status':8}  Material')
@@ -26,7 +26,7 @@ for i, p in enumerate(projects, 1):
 ## Step 2: Show Current Active Project
 
 ```bash
-curl -s http://127.0.0.1:8100/api/active-project | python3 -c "
+curl -s http://127.0.0.1:8743/api/active-project | python3 -c "
 import sys, json
 ap = json.load(sys.stdin)
 if ap.get('project_id'):
@@ -43,7 +43,7 @@ else:
 If the user provided a `project_id` argument, use it directly. Otherwise, present an `AskUserQuestion` selector with up to 4 projects (most recent first, showing name + material + short ID). After user picks, switch:
 
 ```bash
-curl -s -X PUT http://127.0.0.1:8100/api/active-project \
+curl -s -X PUT http://127.0.0.1:8743/api/active-project \
   -H "Content-Type: application/json" \
   -d '{"project_id": "<PROJECT_ID>"}'
 ```
@@ -57,7 +57,7 @@ If more than 4 projects exist, show the 4 most recent and let the user type "Oth
 ## Step 4: Verify
 
 ```bash
-curl -s http://127.0.0.1:8100/api/active-project | python3 -c "
+curl -s http://127.0.0.1:8743/api/active-project | python3 -c "
 import sys, json
 ap = json.load(sys.stdin)
 print(f'Switched to: {ap[\"project_name\"]}')
@@ -71,7 +71,7 @@ print(f'Video ID:    {ap.get(\"video_id\", \"none\")}')
 To revert to the default behavior (most recently created project):
 
 ```bash
-curl -s -X DELETE http://127.0.0.1:8100/api/active-project
+curl -s -X DELETE http://127.0.0.1:8743/api/active-project
 ```
 
 ---

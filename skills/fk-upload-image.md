@@ -7,19 +7,19 @@ Useful for: setting channel icons, covers, or any local image as an entity refer
 ## Step 1: Check health
 
 ```bash
-curl -s http://127.0.0.1:8100/health
+curl -s http://127.0.0.1:8743/health
 ```
 Must have `extension_connected: true` AND flow key present. Abort if not.
 
 ```bash
-curl -s http://127.0.0.1:8100/api/flow/status
+curl -s http://127.0.0.1:8743/api/flow/status
 # Must return: {"connected": true, "flow_key_present": true}
 ```
 
 ## Step 2: Upload image
 
 ```bash
-curl -s -X POST http://127.0.0.1:8100/api/flow/upload-image \
+curl -s -X POST http://127.0.0.1:8743/api/flow/upload-image \
   -H "Content-Type: application/json" \
   -d '{
     "file_path": "/absolute/path/to/image.png",
@@ -48,7 +48,7 @@ The `media_id` is the UUID you use everywhere (entity refs, scene images, video 
 ### Option A: Set as entity reference image
 
 ```bash
-curl -s -X PATCH http://127.0.0.1:8100/api/characters/<ENTITY_ID> \
+curl -s -X PATCH http://127.0.0.1:8743/api/characters/<ENTITY_ID> \
   -H "Content-Type: application/json" \
   -d '{"media_id": "<MEDIA_ID>"}'
 ```
@@ -56,7 +56,7 @@ curl -s -X PATCH http://127.0.0.1:8100/api/characters/<ENTITY_ID> \
 ### Option B: Set as scene image
 
 ```bash
-curl -s -X PATCH http://127.0.0.1:8100/api/scenes/<SCENE_ID> \
+curl -s -X PATCH http://127.0.0.1:8743/api/scenes/<SCENE_ID> \
   -H "Content-Type: application/json" \
   -d '{
     "horizontal_image_media_id": "<MEDIA_ID>",
@@ -69,7 +69,7 @@ curl -s -X PATCH http://127.0.0.1:8100/api/scenes/<SCENE_ID> \
 
 ```bash
 # 1. Create entity
-curl -s -X POST http://127.0.0.1:8100/api/characters \
+curl -s -X POST http://127.0.0.1:8743/api/characters \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Asset Name",
@@ -79,19 +79,19 @@ curl -s -X POST http://127.0.0.1:8100/api/characters \
   }'
 
 # 2. Link to project
-curl -s -X POST http://127.0.0.1:8100/api/projects/<PID>/characters/<ENTITY_ID>
+curl -s -X POST http://127.0.0.1:8743/api/projects/<PID>/characters/<ENTITY_ID>
 ```
 
 ## Step 4: Verify
 
 ```bash
 # For entity:
-curl -s http://127.0.0.1:8100/api/characters/<ENTITY_ID> | python3 -c "
+curl -s http://127.0.0.1:8743/api/characters/<ENTITY_ID> | python3 -c "
 import sys,json; c=json.load(sys.stdin)
 print(f'{c[\"name\"]}: media_id={c.get(\"media_id\",\"none\")}')"
 
 # For scene:
-curl -s http://127.0.0.1:8100/api/scenes/<SCENE_ID> | python3 -c "
+curl -s http://127.0.0.1:8743/api/scenes/<SCENE_ID> | python3 -c "
 import sys,json; s=json.load(sys.stdin)
 print(f'img_status={s.get(\"horizontal_image_status\")} mid={s.get(\"horizontal_image_media_id\")}')"
 ```

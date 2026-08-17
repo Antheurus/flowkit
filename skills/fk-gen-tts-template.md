@@ -6,7 +6,7 @@ Create a reusable voice template for consistent narration across all scenes.
 
 ## Prerequisites
 
-- GLA server running: `curl http://127.0.0.1:8100/health`
+- GLA server running: `curl http://127.0.0.1:8743/health`
 - OmniVoice installed in the Python environment used by the agent (see below)
 
 ### Installing OmniVoice
@@ -81,7 +81,7 @@ This ensures `ref_text` is always known — no need to extract/transcribe later.
 
 ```bash
 # Example: Vietnamese template
-curl -X POST http://127.0.0.1:8100/api/tts/templates \
+curl -X POST http://127.0.0.1:8743/api/tts/templates \
   -H "Content-Type: application/json" \
   -d '{
     "name": "narrator_male_vn",
@@ -104,14 +104,14 @@ Open the returned `audio_path` and verify the voice matches your vision. If not,
 ### Step 3: Link to Project
 
 ```bash
-curl -X PATCH http://127.0.0.1:8100/api/projects/<PID> \
+curl -X PATCH http://127.0.0.1:8743/api/projects/<PID> \
   -H "Content-Type: application/json" \
   -d '{"narrator_ref_audio": "<audio_path from step 1>"}'
 ```
 
 Or pass `template` name directly when narrating (recommended):
 ```bash
-curl -X POST http://127.0.0.1:8100/api/videos/<VID>/narrate \
+curl -X POST http://127.0.0.1:8743/api/videos/<VID>/narrate \
   -d '{"project_id": "<PID>", "template": "narrator_male_vn", "speed": 1.1}'
 ```
 

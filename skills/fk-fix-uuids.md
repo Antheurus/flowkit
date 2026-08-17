@@ -5,7 +5,7 @@ Usage: `/fix-uuids <project_id> <video_id>`
 ## Step 1: Check entities
 
 ```bash
-curl -s http://127.0.0.1:8100/api/projects/<PID>/characters
+curl -s http://127.0.0.1:8743/api/projects/<PID>/characters
 ```
 
 For each entity, check if `media_id` is UUID format (`xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
@@ -16,7 +16,7 @@ If it starts with `CAMS` or doesn't match UUID pattern:
 ## Step 2: Check scenes
 
 ```bash
-curl -s "http://127.0.0.1:8100/api/scenes?video_id=<VID>"
+curl -s "http://127.0.0.1:8743/api/scenes?video_id=<VID>"
 ```
 
 Detect orientation from project `meta.json` (`${ori}` = `horizontal` or `vertical`).

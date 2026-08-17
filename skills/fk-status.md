@@ -5,7 +5,7 @@ Usage: `/fk-status <project_id>` or `/fk-status` (lists all projects)
 ## If no project_id: list all projects
 
 ```bash
-curl -s http://127.0.0.1:8100/api/projects
+curl -s http://127.0.0.1:8743/api/projects
 ```
 
 Print table: ID | Name | Tier | Status
@@ -14,17 +14,17 @@ Print table: ID | Name | Tier | Status
 
 ### 1. Server health
 ```bash
-curl -s http://127.0.0.1:8100/health
+curl -s http://127.0.0.1:8743/health
 ```
 
 ### 2. Project info
 ```bash
-curl -s http://127.0.0.1:8100/api/projects/<PID>
+curl -s http://127.0.0.1:8743/api/projects/<PID>
 ```
 
 ### 3. Entities (references)
 ```bash
-curl -s http://127.0.0.1:8100/api/projects/<PID>/characters
+curl -s http://127.0.0.1:8743/api/projects/<PID>/characters
 ```
 
 Print table:
@@ -33,7 +33,7 @@ Print table:
 
 ### 4. Videos + Orientation Detection
 ```bash
-curl -s "http://127.0.0.1:8100/api/videos?project_id=<PID>"
+curl -s "http://127.0.0.1:8743/api/videos?project_id=<PID>"
 ```
 
 **CRITICAL:** Read the `orientation` field from the video response. This determines which scene fields to read:
@@ -45,7 +45,7 @@ Set `ORI` = the detected orientation (lowercase: `horizontal` or `vertical`). Di
 
 ### 5. For each video — scenes
 ```bash
-curl -s "http://127.0.0.1:8100/api/scenes?video_id=<VID>"
+curl -s "http://127.0.0.1:8743/api/scenes?video_id=<VID>"
 ```
 
 Print table (sorted by display_order), using `${ORI}_*` prefix fields:
@@ -57,7 +57,7 @@ Read from: `${ORI}_image_status`, `${ORI}_video_status`, `${ORI}_upscale_status`
 
 ### 6. Pending/processing requests
 ```bash
-curl -s http://127.0.0.1:8100/api/requests/pending
+curl -s http://127.0.0.1:8743/api/requests/pending
 ```
 
 ### 7. Summary

@@ -9,9 +9,9 @@ Prepares audio for `/fk-concat-fit-narrator`.
 ## Step 1: Load project, video, scenes
 
 ```bash
-curl -s http://127.0.0.1:8100/api/videos/<VID>
-curl -s http://127.0.0.1:8100/api/projects/<PID>
-curl -s "http://127.0.0.1:8100/api/scenes?video_id=<VID>"
+curl -s http://127.0.0.1:8743/api/videos/<VID>
+curl -s http://127.0.0.1:8743/api/projects/<PID>
+curl -s "http://127.0.0.1:8743/api/scenes?video_id=<VID>"
 ```
 
 Note: project name, language, story context.
@@ -37,7 +37,7 @@ Cinematic scenes (will narrate): M
 ## Step 2: Check voice template
 
 ```bash
-curl -s http://127.0.0.1:8100/api/tts/templates
+curl -s http://127.0.0.1:8743/api/tts/templates
 ```
 
 If NO templates exist:
@@ -137,7 +137,7 @@ narrator_text: `Colonel Harris detects unusual radar signatures. Dozens of Irani
 For each scene with generated text:
 
 ```bash
-curl -X PATCH "http://127.0.0.1:8100/api/scenes/<SID>" \
+curl -X PATCH "http://127.0.0.1:8743/api/scenes/<SID>" \
   -H "Content-Type: application/json" \
   -d '{"narrator_text": "<generated_text>"}'
 ```
@@ -170,7 +170,7 @@ Use per-scene generation for reliability:
 
 ```python
 for scene in scenes:
-    curl -s -m 120 -X POST "http://127.0.0.1:8100/api/tts/generate" \
+    curl -s -m 120 -X POST "http://127.0.0.1:8743/api/tts/generate" \
       -H "Content-Type: application/json" \
       -d '{
         "text": "<scene_narrator_text>",
@@ -201,7 +201,7 @@ The `ref_text` is the **exact transcript** of what's spoken in `ref_audio`.
 
 ```bash
 # Get project output directory (creates dir + meta.json if needed)
-PROJ_OUT=$(curl -s http://127.0.0.1:8100/api/projects/<PID>/output-dir)
+PROJ_OUT=$(curl -s http://127.0.0.1:8743/api/projects/<PID>/output-dir)
 OUTDIR=$(echo "$PROJ_OUT" | python3 -c "import sys,json; print(json.load(sys.stdin)['path'])")
 mkdir -p "${OUTDIR}/tts"
 ```

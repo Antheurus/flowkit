@@ -14,7 +14,7 @@ Usage:
 ## Step 1: Show Current Models
 
 ```bash
-curl -s http://127.0.0.1:8100/api/models | python3 -m json.tool
+curl -s http://127.0.0.1:8743/api/models | python3 -m json.tool
 ```
 
 Display in a readable table:
@@ -68,7 +68,7 @@ Use `AskUserQuestion` with options:
 
 ```bash
 # Example: switch TIER_TWO i2v to a different model
-curl -s -X PATCH http://127.0.0.1:8100/api/models \
+curl -s -X PATCH http://127.0.0.1:8743/api/models \
   -H "Content-Type: application/json" \
   -d '{
     "video_models": {
@@ -86,7 +86,7 @@ curl -s -X PATCH http://127.0.0.1:8100/api/models \
 
 ```bash
 # Example: change only portrait video model for TIER_TWO i2v
-curl -s -X PATCH http://127.0.0.1:8100/api/models \
+curl -s -X PATCH http://127.0.0.1:8743/api/models \
   -H "Content-Type: application/json" \
   -d '{
     "video_models": {
@@ -102,7 +102,7 @@ curl -s -X PATCH http://127.0.0.1:8100/api/models \
 ### Change image model
 
 ```bash
-curl -s -X PATCH http://127.0.0.1:8100/api/models \
+curl -s -X PATCH http://127.0.0.1:8743/api/models \
   -H "Content-Type: application/json" \
   -d '{
     "image_models": {
@@ -114,7 +114,7 @@ curl -s -X PATCH http://127.0.0.1:8100/api/models \
 ### Change upscale model
 
 ```bash
-curl -s -X PATCH http://127.0.0.1:8100/api/models \
+curl -s -X PATCH http://127.0.0.1:8743/api/models \
   -H "Content-Type: application/json" \
   -d '{
     "upscale_models": {
@@ -128,7 +128,7 @@ curl -s -X PATCH http://127.0.0.1:8100/api/models \
 After changing, verify the update took effect:
 
 ```bash
-curl -s http://127.0.0.1:8100/api/models | python3 -m json.tool
+curl -s http://127.0.0.1:8743/api/models | python3 -m json.tool
 ```
 
 Changes are **hot-reloaded** — no server restart needed. The new model keys are used immediately for all subsequent requests.
@@ -179,28 +179,28 @@ These are model keys observed on Google Flow (may change as Google updates):
 
 **Switch to VEO 3.1 Lite Low Priority (TRUE 0-credit, works on ADVANCED tier — Recommended for Low Priority):**
 ```bash
-curl -s -X PATCH http://127.0.0.1:8100/api/models \
+curl -s -X PATCH http://127.0.0.1:8743/api/models \
   -H "Content-Type: application/json" \
   -d '{"video_models":{"PAYGATE_TIER_TWO":{"frame_2_video":{"VIDEO_ASPECT_RATIO_LANDSCAPE":"veo_3_1_i2v_lite_low_priority","VIDEO_ASPECT_RATIO_PORTRAIT":"veo_3_1_i2v_lite_low_priority"},"start_end_frame_2_video":{"VIDEO_ASPECT_RATIO_LANDSCAPE":"veo_3_1_i2v_lite_low_priority","VIDEO_ASPECT_RATIO_PORTRAIT":"veo_3_1_i2v_lite_low_priority"}}}}'
 ```
 
 **Switch to VEO 3.1 Lite (fast, ~5 credits per video, no r2v):**
 ```bash
-curl -s -X PATCH http://127.0.0.1:8100/api/models \
+curl -s -X PATCH http://127.0.0.1:8743/api/models \
   -H "Content-Type: application/json" \
   -d '{"video_models":{"PAYGATE_TIER_TWO":{"frame_2_video":{"VIDEO_ASPECT_RATIO_LANDSCAPE":"veo_3_1_i2v_lite","VIDEO_ASPECT_RATIO_PORTRAIT":"veo_3_1_i2v_lite"},"start_end_frame_2_video":{"VIDEO_ASPECT_RATIO_LANDSCAPE":"veo_3_1_i2v_lite","VIDEO_ASPECT_RATIO_PORTRAIT":"veo_3_1_i2v_lite"}}}}'
 ```
 
 **Switch to VEO 3.1 Low Priority "leaving" (0 credits, requires SERVICE_TIER_ULTRA — fails silently on ADVANCED):**
 ```bash
-curl -s -X PATCH http://127.0.0.1:8100/api/models \
+curl -s -X PATCH http://127.0.0.1:8743/api/models \
   -H "Content-Type: application/json" \
   -d '{"video_models":{"PAYGATE_TIER_TWO":{"frame_2_video":{"VIDEO_ASPECT_RATIO_LANDSCAPE":"veo_3_1_i2v_s_fast_ultra_relaxed","VIDEO_ASPECT_RATIO_PORTRAIT":"veo_3_1_i2v_s_fast_ultra_relaxed"},"start_end_frame_2_video":{"VIDEO_ASPECT_RATIO_LANDSCAPE":"veo_3_1_i2v_s_fast_ultra_relaxed","VIDEO_ASPECT_RATIO_PORTRAIT":"veo_3_1_i2v_s_fast_ultra_relaxed"},"reference_frame_2_video":{"VIDEO_ASPECT_RATIO_LANDSCAPE":"veo_3_1_r2v_fast_landscape_ultra_relaxed","VIDEO_ASPECT_RATIO_PORTRAIT":"veo_3_1_r2v_fast_landscape_ultra_relaxed"}}}}'
 ```
 
 **Switch to VEO 3.1 Fast Ultra (~10 credits per video, full quality, requires credits):**
 ```bash
-curl -s -X PATCH http://127.0.0.1:8100/api/models \
+curl -s -X PATCH http://127.0.0.1:8743/api/models \
   -H "Content-Type: application/json" \
   -d '{"video_models":{"PAYGATE_TIER_TWO":{"frame_2_video":{"VIDEO_ASPECT_RATIO_LANDSCAPE":"veo_3_1_i2v_s_fast_ultra","VIDEO_ASPECT_RATIO_PORTRAIT":"veo_3_1_i2v_s_fast_portrait_ultra"},"start_end_frame_2_video":{"VIDEO_ASPECT_RATIO_LANDSCAPE":"veo_3_1_i2v_s_fast_ultra_fl","VIDEO_ASPECT_RATIO_PORTRAIT":"veo_3_1_i2v_s_fast_portrait_ultra_fl"},"reference_frame_2_video":{"VIDEO_ASPECT_RATIO_LANDSCAPE":"veo_3_0_r2v_fast_ultra","VIDEO_ASPECT_RATIO_PORTRAIT":"veo_3_0_r2v_fast_portrait_ultra"}}}}'
 ```

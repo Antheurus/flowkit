@@ -10,11 +10,11 @@ Usage: `/fk-gen-text-overlays <video_id> [--language vi]`
 ## Step 1: Load project, video, scenes
 
 ```bash
-curl -s http://127.0.0.1:8100/api/videos/<VID>
+curl -s http://127.0.0.1:8743/api/videos/<VID>
 # Get project_id
-curl -s http://127.0.0.1:8100/api/projects/<PID>
-curl -s "http://127.0.0.1:8100/api/scenes?video_id=<VID>"
-curl -s http://127.0.0.1:8100/api/projects/<PID>/output-dir
+curl -s http://127.0.0.1:8743/api/projects/<PID>
+curl -s "http://127.0.0.1:8743/api/scenes?video_id=<VID>"
+curl -s http://127.0.0.1:8743/api/projects/<PID>/output-dir
 ```
 
 Sort scenes by `display_order`. Note `OUTDIR` from output-dir response.

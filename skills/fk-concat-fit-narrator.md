@@ -7,10 +7,10 @@ Default: trims each scene to `narrator_duration + 0.5s`, preserves 4K, mixes SFX
 ## Step 1: Get project, video, and scenes
 
 ```bash
-curl -s http://127.0.0.1:8100/api/videos/<VID>
+curl -s http://127.0.0.1:8743/api/videos/<VID>
 # Get project_id from video response
-curl -s http://127.0.0.1:8100/api/projects/<PID>
-curl -s "http://127.0.0.1:8100/api/scenes?video_id=<VID>"
+curl -s http://127.0.0.1:8743/api/projects/<PID>
+curl -s "http://127.0.0.1:8743/api/scenes?video_id=<VID>"
 ```
 
 Note: project name (for output folder).
@@ -75,7 +75,7 @@ Ask user to confirm before processing.
 
 ```bash
 # Get project output directory (creates dir + meta.json if needed)
-PROJ_OUT=$(curl -s http://127.0.0.1:8100/api/projects/<PID>/output-dir)
+PROJ_OUT=$(curl -s http://127.0.0.1:8743/api/projects/<PID>/output-dir)
 OUTDIR=$(echo "$PROJ_OUT" | python3 -c "import sys,json; print(json.load(sys.stdin)['path'])")
 SLUG=$(echo "$PROJ_OUT" | python3 -c "import sys,json; print(json.load(sys.stdin)['slug'])")
 mkdir -p "${OUTDIR}/trimmed" "${OUTDIR}/norm"

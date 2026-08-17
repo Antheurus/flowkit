@@ -25,7 +25,7 @@ if [ ! -t 0 ]; then
 fi
 
 # ── GLA info (parallel fetch) ──
-BASE="http://127.0.0.1:8100"
+BASE="http://127.0.0.1:8743"
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 

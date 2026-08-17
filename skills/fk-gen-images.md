@@ -7,7 +7,7 @@ If not provided, ask or list projects/videos.
 ## Step 0: Detect orientation
 
 ```bash
-PROJ_OUT=$(curl -s http://127.0.0.1:8100/api/projects/<PID>/output-dir)
+PROJ_OUT=$(curl -s http://127.0.0.1:8743/api/projects/<PID>/output-dir)
 OUTDIR=$(echo "$PROJ_OUT" | python3 -c "import sys,json; print(json.load(sys.stdin)['path'])")
 ORI=$(cat ${OUTDIR}/meta.json | python3 -c "import sys,json; print(json.load(sys.stdin).get('orientation','HORIZONTAL'))")
 ori=$(echo "$ORI" | tr '[:upper:]' '[:lower:]')
@@ -17,7 +17,7 @@ ori=$(echo "$ORI" | tr '[:upper:]' '[:lower:]')
 ## Step 1: Pre-check — all references must be ready
 
 ```bash
-curl -s http://127.0.0.1:8100/api/projects/<PID>/characters
+curl -s http://127.0.0.1:8743/api/projects/<PID>/characters
 ```
 
 **ABORT** if any entity is missing `media_id`. Tell user to run `/fk-gen-refs <PID>` first.
@@ -25,7 +25,7 @@ curl -s http://127.0.0.1:8100/api/projects/<PID>/characters
 ## Step 2: Get scenes and classify by chain_type
 
 ```bash
-curl -s "http://127.0.0.1:8100/api/scenes?video_id=<VID>"
+curl -s "http://127.0.0.1:8743/api/scenes?video_id=<VID>"
 ```
 
 Filter to scenes where `${ori}_image_status` != `"COMPLETED"` or `${ori}_image_media_id` is missing/not UUID.
@@ -48,7 +48,7 @@ Build the wave map by walking the `parent_scene_id` chain. Scenes in the same wa
 ### Wave 1 — ROOT scenes (GENERATE_IMAGE)
 
 ```bash
-curl -X POST http://127.0.0.1:8100/api/requests/batch \
+curl -X POST http://127.0.0.1:8743/api/requests/batch \
   -H "Content-Type: application/json" \
   -d '{
     "requests": [
@@ -61,7 +61,7 @@ curl -X POST http://127.0.0.1:8100/api/requests/batch \
 Poll until Wave 1 completes:
 
 ```bash
-curl -s "http://127.0.0.1:8100/api/requests/batch-status?video_id=<VID>&type=GENERATE_IMAGE"
+curl -s "http://127.0.0.1:8743/api/requests/batch-status?video_id=<VID>&type=GENERATE_IMAGE"
 # Wait for: "done": true
 ```
 
@@ -70,7 +70,7 @@ curl -s "http://127.0.0.1:8100/api/requests/batch-status?video_id=<VID>&type=GEN
 After the parent wave completes, submit CONTINUATION scenes whose parents now have completed images:
 
 ```bash
-curl -X POST http://127.0.0.1:8100/api/requests/batch \
+curl -X POST http://127.0.0.1:8743/api/requests/batch \
   -H "Content-Type: application/json" \
   -d '{
     "requests": [
@@ -85,7 +85,7 @@ The worker auto-resolves `source_media_id` from the parent scene's `${ori}_image
 Poll until wave completes, then submit next wave. Repeat until all waves done.
 
 ```bash
-curl -s "http://127.0.0.1:8100/api/requests/batch-status?video_id=<VID>&type=EDIT_IMAGE"
+curl -s "http://127.0.0.1:8743/api/requests/batch-status?video_id=<VID>&type=EDIT_IMAGE"
 # Wait for: "done": true
 ```
 
@@ -95,13 +95,13 @@ curl -s "http://127.0.0.1:8100/api/requests/batch-status?video_id=<VID>&type=EDI
 
 After all waves complete, check each scene:
 ```bash
-curl -s "http://127.0.0.1:8100/api/scenes?video_id=<VID>"
+curl -s "http://127.0.0.1:8743/api/scenes?video_id=<VID>"
 ```
 
 If any `${ori}_image_media_id` starts with `CAMS` or is not UUID format, fix it by extracting UUID from `${ori}_image_url`:
 ```bash
 # Extract UUID from URL path: /image/{UUID}?...
-curl -X PATCH http://127.0.0.1:8100/api/scenes/<SID> \
+curl -X PATCH http://127.0.0.1:8743/api/scenes/<SID> \
   -H "Content-Type: application/json" \
   -d '{"${ori}_image_media_id": "<extracted_uuid>"}'
 ```

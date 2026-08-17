@@ -4,7 +4,7 @@ Generate background music or songs for video projects using the Suno API (sunoap
 
 ## Prerequisites
 
-- GLA server running: `curl http://127.0.0.1:8100/health`
+- GLA server running: `curl http://127.0.0.1:8743/health`
 - Suno API key configured: `export SUNO_API_KEY=your-key`
 - Get API key at https://sunoapi.org/api-key
 
@@ -16,10 +16,10 @@ Browse available song templates to find the right style:
 
 ```bash
 # List all templates
-curl -s http://127.0.0.1:8100/api/music/templates | python3 -m json.tool
+curl -s http://127.0.0.1:8743/api/music/templates | python3 -m json.tool
 
 # Get a specific template (see style, tags, example lyrics)
-curl -s http://127.0.0.1:8100/api/music/templates/cinematic_epic
+curl -s http://127.0.0.1:8743/api/music/templates/cinematic_epic
 ```
 
 Available categories: Children & Family, Love & Romance, Pop, Rock, Hip-Hop, Electronic, Country & Folk, Cinematic, Motivational.
@@ -34,7 +34,7 @@ Use a template to auto-fill style tags. Provide custom lyrics or let the templat
 
 ```bash
 # With custom lyrics + template style
-curl -X POST http://127.0.0.1:8100/api/music/generate \
+curl -X POST http://127.0.0.1:8743/api/music/generate \
   -H "Content-Type: application/json" \
   -d '{
     "template_id": "cinematic_epic",
@@ -44,7 +44,7 @@ curl -X POST http://127.0.0.1:8100/api/music/generate \
   }'
 
 # Template defaults (uses example lyrics + suno_tags)
-curl -X POST http://127.0.0.1:8100/api/music/generate \
+curl -X POST http://127.0.0.1:8743/api/music/generate \
   -H "Content-Type: application/json" \
   -d '{
     "template_id": "lullaby_gentle",
@@ -58,7 +58,7 @@ curl -X POST http://127.0.0.1:8100/api/music/generate \
 Provide your own lyrics and style tags:
 
 ```bash
-curl -X POST http://127.0.0.1:8100/api/music/generate \
+curl -X POST http://127.0.0.1:8743/api/music/generate \
   -H "Content-Type: application/json" \
   -d '{
     "prompt": "[Verse]\nWalking through the rain\nSearching for the light\n[Chorus]\nWe will find our way\nThrough the darkest night",
@@ -73,7 +73,7 @@ curl -X POST http://127.0.0.1:8100/api/music/generate \
 Just describe what you want in natural language:
 
 ```bash
-curl -X POST http://127.0.0.1:8100/api/music/generate \
+curl -X POST http://127.0.0.1:8743/api/music/generate \
   -H "Content-Type: application/json" \
   -d '{
     "prompt": "an epic orchestral track for a military documentary about naval battles, dramatic and heroic",
@@ -89,10 +89,10 @@ Each generation produces **2 clips** (variations). When `poll: true`, the respon
 
 ```bash
 # If poll was false, check status manually:
-curl -s http://127.0.0.1:8100/api/music/tasks/<TASK_ID>
+curl -s http://127.0.0.1:8743/api/music/tasks/<TASK_ID>
 
 # Poll until complete:
-curl -X POST http://127.0.0.1:8100/api/music/tasks/<TASK_ID>/poll
+curl -X POST http://127.0.0.1:8743/api/music/tasks/<TASK_ID>/poll
 ```
 
 **Task statuses:** `PENDING` → `GENERATING` → `SUCCESS` or `FAILED`
@@ -100,7 +100,7 @@ curl -X POST http://127.0.0.1:8100/api/music/tasks/<TASK_ID>/poll
 ### Step 4: Download
 
 ```bash
-curl -X POST http://127.0.0.1:8100/api/music/tasks/<TASK_ID>/download
+curl -X POST http://127.0.0.1:8743/api/music/tasks/<TASK_ID>/download
 # Returns: {"task_id": "...", "downloaded": [{"clip_id": "...", "path": "output/_shared/music/title_abcd1234.mp3", ...}]}
 ```
 
@@ -110,7 +110,7 @@ Add the downloaded music as background for your concat video:
 
 ```bash
 # Get project output directory
-PROJ_OUT=$(curl -s http://127.0.0.1:8100/api/projects/<PID>/output-dir)
+PROJ_OUT=$(curl -s http://127.0.0.1:8743/api/projects/<PID>/output-dir)
 OUTDIR=$(echo "$PROJ_OUT" | python3 -c "import sys,json; print(json.load(sys.stdin)['path'])")
 SLUG=$(echo "$PROJ_OUT" | python3 -c "import sys,json; print(json.load(sys.stdin)['slug'])")
 
@@ -125,7 +125,7 @@ ffmpeg -y -i "${OUTDIR}/${SLUG}_final.mp4" -i output/_shared/music/track.mp3 \
 Continue or extend an existing clip from a previous generation:
 
 ```bash
-curl -X POST http://127.0.0.1:8100/api/music/extend \
+curl -X POST http://127.0.0.1:8743/api/music/extend \
   -H "Content-Type: application/json" \
   -d '{
     "audio_id": "<AUDIO_ID from clip>",
@@ -140,7 +140,7 @@ curl -X POST http://127.0.0.1:8100/api/music/extend \
 Separate vocals from instrumental:
 
 ```bash
-curl -X POST http://127.0.0.1:8100/api/music/vocal-removal \
+curl -X POST http://127.0.0.1:8743/api/music/vocal-removal \
   -H "Content-Type: application/json" \
   -d '{
     "task_id": "<TASK_ID>",
@@ -155,7 +155,7 @@ curl -X POST http://127.0.0.1:8100/api/music/vocal-removal \
 Get lossless WAV from a generated clip:
 
 ```bash
-curl -X POST http://127.0.0.1:8100/api/music/convert-to-wav \
+curl -X POST http://127.0.0.1:8743/api/music/convert-to-wav \
   -H "Content-Type: application/json" \
   -d '{
     "task_id": "<TASK_ID>",
@@ -169,7 +169,7 @@ curl -X POST http://127.0.0.1:8100/api/music/convert-to-wav \
 Ask Suno's AI to write lyrics from a description, optionally guided by a template:
 
 ```bash
-curl -X POST http://127.0.0.1:8100/api/music/generate-lyrics \
+curl -X POST http://127.0.0.1:8743/api/music/generate-lyrics \
   -H "Content-Type: application/json" \
   -d '{
     "prompt": "a song about a cat astronaut exploring a candy planet",
@@ -181,7 +181,7 @@ curl -X POST http://127.0.0.1:8100/api/music/generate-lyrics \
 ## Check Credits
 
 ```bash
-curl -s http://127.0.0.1:8100/api/music/credits
+curl -s http://127.0.0.1:8743/api/music/credits
 ```
 
 ## API Reference

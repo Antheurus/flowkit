@@ -14,11 +14,11 @@ Default mode: `light`. Orientation auto-detected from project `meta.json`.
 
 ```bash
 # Verify server + extension connected
-curl -s http://127.0.0.1:8100/health
+curl -s http://127.0.0.1:8743/health
 # Must return: {"extension_connected": true}
 
 # Verify video exists
-curl -s http://127.0.0.1:8100/api/videos/<VID>
+curl -s http://127.0.0.1:8743/api/videos/<VID>
 ```
 
 **ABORT** if extension not connected or video not found.
@@ -26,7 +26,7 @@ curl -s http://127.0.0.1:8100/api/videos/<VID>
 ## Step 2: Check scenes have completed videos
 
 ```bash
-curl -s "http://127.0.0.1:8100/api/scenes?video_id=<VID>"
+curl -s "http://127.0.0.1:8743/api/scenes?video_id=<VID>"
 ```
 
 For each scene, verify `${ori}_video_status = COMPLETED` (orientation auto-detected from meta.json).
@@ -36,7 +36,7 @@ For each scene, verify `${ori}_video_status = COMPLETED` (orientation auto-detec
 ## Step 3: Run review via API
 
 ```bash
-curl -X POST "http://127.0.0.1:8100/api/videos/<VID>/review?project_id=<PID>&mode=light&orientation=${ORI}"
+curl -X POST "http://127.0.0.1:8743/api/videos/<VID>/review?project_id=<PID>&mode=light&orientation=${ORI}"
 ```
 
 **Parameters:**
@@ -47,7 +47,7 @@ The API will extract frames from each scene video, send them to Claude Vision, a
 
 **Poll until complete:**
 ```bash
-curl -s http://127.0.0.1:8100/api/requests/<RID>
+curl -s http://127.0.0.1:8743/api/requests/<RID>
 # Wait for status: "COMPLETED"
 ```
 
@@ -112,7 +112,7 @@ Errors in the `errors` array are prefixed with severity: `[CRITICAL]`, `[HIGH]`,
 Regenerate the scene image first, then the video:
 ```bash
 # Force-regenerate scene image (cascades video + upscale)
-curl -X POST http://127.0.0.1:8100/api/requests \
+curl -X POST http://127.0.0.1:8743/api/requests \
   -H "Content-Type: application/json" \
   -d '{"type": "REGENERATE_IMAGE", "scene_id": "<SID>", "project_id": "<PID>", "video_id": "<VID>", "orientation": "${ORI}"}'
 ```
@@ -125,7 +125,7 @@ Note `usable_segments` time ranges for manual editing. Use `/fk-concat` and trim
 - Verify all entity ref images have `media_id` (UUID format)
 - Use `EDIT_IMAGE` to re-anchor character appearance:
   ```bash
-  curl -X POST http://127.0.0.1:8100/api/requests \
+  curl -X POST http://127.0.0.1:8743/api/requests \
     -H "Content-Type: application/json" \
     -d '{"type": "EDIT_IMAGE", "scene_id": "<SID>", "project_id": "<PID>", "video_id": "<VID>", "orientation": "${ORI}"}'
   ```
@@ -133,7 +133,7 @@ Note `usable_segments` time ranges for manual editing. Use `/fk-concat` and trim
 ### After fixes
 Run review again to verify improvements:
 ```bash
-curl -X POST "http://127.0.0.1:8100/api/videos/<VID>/review?project_id=<PID>&mode=deep"
+curl -X POST "http://127.0.0.1:8743/api/videos/<VID>/review?project_id=<PID>&mode=deep"
 ```
 
 ## Modes

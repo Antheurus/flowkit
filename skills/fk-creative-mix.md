@@ -104,7 +104,7 @@ Polish scene images before committing to video generation.
 Before running creative-mix, remove any previous system-generated scenes:
 
 ```bash
-curl -X DELETE "http://127.0.0.1:8100/api/scenes?video_id=<VID>&source=system"
+curl -X DELETE "http://127.0.0.1:8743/api/scenes?video_id=<VID>&source=system"
 ```
 
 This deletes all `source=system` INSERT scenes and re-compacts display_order. Safe to re-run.
@@ -112,8 +112,8 @@ This deletes all `source=system` INSERT scenes and re-compacts display_order. Sa
 ## Step 1: Analyze current video
 
 ```bash
-curl -s "http://127.0.0.1:8100/api/scenes?video_id=<VID>"
-curl -s http://127.0.0.1:8100/api/projects/<PID>/characters
+curl -s "http://127.0.0.1:8743/api/scenes?video_id=<VID>"
+curl -s http://127.0.0.1:8743/api/projects/<PID>/characters
 ```
 
 Review scenes and suggest enhancements:

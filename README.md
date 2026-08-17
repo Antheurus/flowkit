@@ -173,7 +173,7 @@ A local React dashboard (`dashboard/`) for monitoring and driving the pipeline �
 │  Python Agent    │◄──────────────────►│  Chrome Extension     │
 │  (FastAPI+SQLite)│     localhost:9222  │  (MV3 Service Worker) │
 │                  │                    │                       │
-│  - REST API :8100│  ── commands ──►   │  - Token capture      │
+│  - REST API :8743│  ── commands ──►   │  - Token capture      │
 │  - Queue worker  │  ◄── results ──    │  - reCAPTCHA solve    │
 │  - Post-process  │                    │  - API proxy          │
 │  - SQLite DB     │                    │  (on labs.google)     │
@@ -209,7 +209,7 @@ source venv/bin/activate   # if using setup.sh
 python -m agent.main
 
 # 4. Verify
-curl http://127.0.0.1:8100/health
+curl http://127.0.0.1:8743/health
 # {"status":"ok","extension_connected":true}
 ```
 
@@ -277,7 +277,7 @@ From the story, identify every visual element that repeats across scenes:
 | Golden Fish | `visual_asset` | Golden koi, shimmering scales, magical glow |
 
 ```bash
-curl -X POST http://127.0.0.1:8100/api/projects \
+curl -X POST http://127.0.0.1:8743/api/projects \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Pippip the Fish Merchant",
@@ -298,12 +298,12 @@ Scene prompts reference entities by **name** (not description). `character_names
 
 ```bash
 # Create video
-curl -X POST http://127.0.0.1:8100/api/videos \
+curl -X POST http://127.0.0.1:8743/api/videos \
   -H "Content-Type: application/json" \
   -d '{"project_id": "<PID>", "title": "Pippip Episode 1"}'
 
 # Scene 1 (ROOT) — Pippip + Fish Stall + Open Market appear
-curl -X POST http://127.0.0.1:8100/api/scenes \
+curl -X POST http://127.0.0.1:8743/api/scenes \
   -H "Content-Type: application/json" \
   -d '{
     "video_id": "<VID>", "display_order": 0,
@@ -313,7 +313,7 @@ curl -X POST http://127.0.0.1:8100/api/scenes \
   }'
 
 # Scene 2 (CONTINUATION) — Golden Fish now appears
-curl -X POST http://127.0.0.1:8100/api/scenes \
+curl -X POST http://127.0.0.1:8743/api/scenes \
   -H "Content-Type: application/json" \
   -d '{
     "video_id": "<VID>", "display_order": 1,
@@ -323,7 +323,7 @@ curl -X POST http://127.0.0.1:8100/api/scenes \
   }'
 
 # Scene 3 (CONTINUATION)
-curl -X POST http://127.0.0.1:8100/api/scenes \
+curl -X POST http://127.0.0.1:8743/api/scenes \
   -H "Content-Type: application/json" \
   -d '{
     "video_id": "<VID>", "display_order": 2,
@@ -337,22 +337,22 @@ curl -X POST http://127.0.0.1:8100/api/scenes \
 
 ```bash
 # Step 3: Generate reference images (one per entity, wait for each)
-curl -X POST http://127.0.0.1:8100/api/requests \
+curl -X POST http://127.0.0.1:8743/api/requests \
   -d '{"type": "GENERATE_CHARACTER_IMAGE", "character_id": "<CID>", "project_id": "<PID>"}'
 # Poll: GET /api/requests/<RID> until status=COMPLETED
 # Repeat for each entity. Verify all have UUID media_id.
 
 # Step 4: Generate scene images
-curl -X POST http://127.0.0.1:8100/api/requests \
+curl -X POST http://127.0.0.1:8743/api/requests \
   -d '{"type": "GENERATE_IMAGE", "scene_id": "<SID>", "project_id": "<PID>", "video_id": "<VID>", "orientation": "VERTICAL"}'
 # Worker blocks if any ref is missing media_id
 
 # Step 5: Generate videos (2-5 min each)
-curl -X POST http://127.0.0.1:8100/api/requests \
+curl -X POST http://127.0.0.1:8743/api/requests \
   -d '{"type": "GENERATE_VIDEO", "scene_id": "<SID>", "project_id": "<PID>", "video_id": "<VID>", "orientation": "VERTICAL"}'
 
 # Step 6: Download + concat
-curl -s "http://127.0.0.1:8100/api/scenes?video_id=<VID>"  # get video URLs
+curl -s "http://127.0.0.1:8743/api/scenes?video_id=<VID>"  # get video URLs
 # Download each, normalize with ffmpeg, concat
 ```
 
@@ -523,10 +523,10 @@ Separate from the table above — this is about **which CLI backend does the vis
 
 ```bash
 # View provider status (installed / version-tested / currently active)
-curl -s "http://127.0.0.1:8100/api/providers?live=true" | python3 -m json.tool
+curl -s "http://127.0.0.1:8743/api/providers?live=true" | python3 -m json.tool
 
 # Switch provider — hot-reloaded immediately, no server restart
-curl -X PATCH http://127.0.0.1:8100/api/providers \
+curl -X PATCH http://127.0.0.1:8743/api/providers \
   -H "Content-Type: application/json" -d '{"active": "agy"}'
 ```
 
@@ -598,10 +598,10 @@ Every project must have a `material` field that controls the visual style of gen
 
 ```bash
 # List available materials
-curl -s http://127.0.0.1:8100/api/materials
+curl -s http://127.0.0.1:8743/api/materials
 
 # Set on project
-curl -X POST http://127.0.0.1:8100/api/projects \
+curl -X POST http://127.0.0.1:8743/api/projects \
   -d '{"name": "...", "material": "3d_pixar", ...}'
 ```
 
@@ -612,7 +612,7 @@ Materials control both entity `image_prompt` style and scene `scene_prefix`. Exa
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `API_HOST` | `127.0.0.1` | REST API bind address |
-| `API_PORT` | `8100` | REST API port |
+| `API_PORT` | `8743` | REST API port |
 | `WS_HOST` | `127.0.0.1` | WebSocket server bind |
 | `WS_PORT` | `9222` | WebSocket server port |
 | `POLL_INTERVAL` | `5` | Worker poll interval (seconds) |

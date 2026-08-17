@@ -21,7 +21,7 @@ All INSERT scenes use the SAME `character_names` as the parent for visual consis
 ## Step 1: Get current scenes
 
 ```bash
-curl -s "http://127.0.0.1:8100/api/scenes?video_id=<VID>"
+curl -s "http://127.0.0.1:8743/api/scenes?video_id=<VID>"
 ```
 
 Find the scene at the specified `display_order`. This becomes the parent.
@@ -33,7 +33,7 @@ Ask the user for:
 - **character_names**: Default to same as parent scene (user can override)
 
 ```bash
-curl -X POST http://127.0.0.1:8100/api/scenes \
+curl -X POST http://127.0.0.1:8743/api/scenes \
   -H "Content-Type: application/json" \
   -d '{
     "video_id": "<VID>",
@@ -52,7 +52,7 @@ All scenes with `display_order > parent_order` need their order incremented by 1
 
 ```bash
 # For each scene after the insert point:
-curl -X PATCH http://127.0.0.1:8100/api/scenes/<SID> \
+curl -X PATCH http://127.0.0.1:8743/api/scenes/<SID> \
   -H "Content-Type: application/json" \
   -d '{"display_order": <current_order + 1>}'
 ```

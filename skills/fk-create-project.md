@@ -107,7 +107,7 @@ Camera stays behind. Viewers see the leader's power through body language, not f
 ## Step 1: Create project with all entities
 
 ```bash
-curl -X POST http://127.0.0.1:8100/api/projects \
+curl -X POST http://127.0.0.1:8743/api/projects \
   -H "Content-Type: application/json" \
   -d '{"name": "...", "description": "...", "story": "...", "material": "3d_pixar", "characters": [
     {"name": "...", "entity_type": "character", "description": "...", "voice_description": "Deep calm voice, speaks slowly with confidence"},
@@ -121,7 +121,7 @@ Save the returned `project_id`.
 ## Step 2: Create video
 
 ```bash
-curl -X POST http://127.0.0.1:8100/api/videos \
+curl -X POST http://127.0.0.1:8743/api/videos \
   -H "Content-Type: application/json" \
   -d '{"project_id": "<PID>", "title": "...", "display_order": 0}'
 ```
@@ -251,7 +251,7 @@ Scene 4's video uses `transition_prompt` because it has `end_scene_media_id` (sc
 - `character_names`: list ALL entities that should appear (characters + locations + assets)
 
 ```bash
-curl -X POST http://127.0.0.1:8100/api/scenes \
+curl -X POST http://127.0.0.1:8743/api/scenes \
   -H "Content-Type: application/json" \
   -d '{"video_id": "<VID>", "display_order": N, "prompt": "...", "video_prompt": "...", "transition_prompt": "...", "character_names": [...], "chain_type": "ROOT|CONTINUATION", "parent_scene_id": "..."}'
 ```
@@ -423,7 +423,7 @@ Print a summary table:
 After creating scenes, review all prompts. If any prompt is too simple or missing detail, **PATCH it — do not delete and recreate**.
 
 ```bash
-curl -X PATCH http://127.0.0.1:8100/api/scenes/<SID> \
+curl -X PATCH http://127.0.0.1:8743/api/scenes/<SID> \
   -H "Content-Type: application/json" \
   -d '{
     "prompt": "Hero charges across the Castle bridge at dawn, sword raised, golden light catching the blade. Wide shot.",
@@ -442,12 +442,12 @@ curl -X PATCH http://127.0.0.1:8100/api/scenes/<SID> \
 After all scenes are created, **always** switch the active project to the newly created one. Without this, downstream skills (`/fk-status`, `/fk-pipeline`, `/fk-monitor`, `/fk-dashboard`) will continue showing the previously-active project — confusing and a frequent source of errors.
 
 ```bash
-curl -s -X PUT http://127.0.0.1:8100/api/active-project \
+curl -s -X PUT http://127.0.0.1:8743/api/active-project \
   -H "Content-Type: application/json" \
   -d '{"project_id":"<PID>"}'
 
 # Verify
-curl -s http://127.0.0.1:8100/api/active-project
+curl -s http://127.0.0.1:8743/api/active-project
 # Should print: {"project_id":"<PID>","project_name":"<your new project>",...}
 ```
 

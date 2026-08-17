@@ -5,7 +5,7 @@ Usage: `/fk-gen-videos <project_id> <video_id>`
 ## Step 0: Detect orientation
 
 ```bash
-PROJ_OUT=$(curl -s http://127.0.0.1:8100/api/projects/<PID>/output-dir)
+PROJ_OUT=$(curl -s http://127.0.0.1:8743/api/projects/<PID>/output-dir)
 OUTDIR=$(echo "$PROJ_OUT" | python3 -c "import sys,json; print(json.load(sys.stdin)['path'])")
 ORI=$(cat ${OUTDIR}/meta.json | python3 -c "import sys,json; print(json.load(sys.stdin).get('orientation','HORIZONTAL'))")
 ori=$(echo "$ORI" | tr '[:upper:]' '[:lower:]')
@@ -15,7 +15,7 @@ ori=$(echo "$ORI" | tr '[:upper:]' '[:lower:]')
 ## Step 1: Pre-check — all scene images must be ready
 
 ```bash
-curl -s "http://127.0.0.1:8100/api/scenes?video_id=<VID>"
+curl -s "http://127.0.0.1:8743/api/scenes?video_id=<VID>"
 ```
 
 **ABORT** if any scene is missing `${ori}_image_media_id` (UUID) or `${ori}_image_status` != `"COMPLETED"`. Tell user to run `/fk-gen-images` first.
@@ -29,7 +29,7 @@ Only scenes where `${ori}_video_status` != `"COMPLETED"` or `${ori}_video_media_
 The server handles throttling automatically (max 5 concurrent, 10s cooldown). Submit everything in one batch call. Video generation takes 2-5 minutes per scene.
 
 ```bash
-curl -X POST http://127.0.0.1:8100/api/requests/batch \
+curl -X POST http://127.0.0.1:8743/api/requests/batch \
   -H "Content-Type: application/json" \
   -d '{
     "requests": [
@@ -44,7 +44,7 @@ Build the `requests` array from ALL scenes filtered in Step 2. Do NOT manually b
 Poll aggregate status every 30s until done (videos take longer):
 
 ```bash
-curl -s "http://127.0.0.1:8100/api/requests/batch-status?video_id=<VID>&type=GENERATE_VIDEO"
+curl -s "http://127.0.0.1:8743/api/requests/batch-status?video_id=<VID>&type=GENERATE_VIDEO"
 # Wait for: "done": true
 # If "all_succeeded": false → some failed, check individual failures
 ```
@@ -52,7 +52,7 @@ curl -s "http://127.0.0.1:8100/api/requests/batch-status?video_id=<VID>&type=GEN
 ## Step 4: Verify
 
 ```bash
-curl -s "http://127.0.0.1:8100/api/scenes?video_id=<VID>"
+curl -s "http://127.0.0.1:8743/api/scenes?video_id=<VID>"
 ```
 
 ## Step 5: Output

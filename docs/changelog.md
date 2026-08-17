@@ -1,5 +1,10 @@
 # Flow Kit Changelog
 
+## v1.2.1 — Agent moved to a new port
+
+- **The local agent now runs on port `8743` instead of `8100`.** If you have anything bookmarked or scripted against `http://127.0.0.1:8100`, update it to `8743`. The dashboard and extension already point at the new port; no action needed for those.
+- **Action required:** reload the browser extension once (`chrome://extensions` → reload) so it picks up the new port — it will show "Agent disconnected" until you do.
+
 ## v1.2.0 — Flow's own AI agent can now be used to build scenes
 
 - **You can now have Flow's built-in AI agent build your scenes**, instead of only sending generation requests at it directly. In practice it's noticeably better: given a character reference it rewrites the prompts itself, keeps the right characters attached, and holds the look consistent from shot to shot. In this release it fixed two frames where a character had drifted into looking like a completely different creature.

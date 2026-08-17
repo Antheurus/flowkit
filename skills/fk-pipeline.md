@@ -36,14 +36,14 @@ Examples:
 
 ```bash
 # Most recent project
-curl -s http://127.0.0.1:8100/api/projects
+curl -s http://127.0.0.1:8743/api/projects
 # Use last item → {id, name}
 
 # Get video + scenes
-VID=$(curl -s "http://127.0.0.1:8100/api/videos?project_id=<PID>" | python3 -c "import sys,json; print(json.load(sys.stdin)[0]['id'])")
-curl -s "http://127.0.0.1:8100/api/scenes?video_id=$VID" > /tmp/fk_scenes.json
-curl -s "http://127.0.0.1:8100/api/projects/<PID>/characters" > /tmp/fk_chars.json
-curl -s "http://127.0.0.1:8100/api/projects/<PID>/output-dir" > /tmp/fk_outdir.json
+VID=$(curl -s "http://127.0.0.1:8743/api/videos?project_id=<PID>" | python3 -c "import sys,json; print(json.load(sys.stdin)[0]['id'])")
+curl -s "http://127.0.0.1:8743/api/scenes?video_id=$VID" > /tmp/fk_scenes.json
+curl -s "http://127.0.0.1:8743/api/projects/<PID>/characters" > /tmp/fk_chars.json
+curl -s "http://127.0.0.1:8743/api/projects/<PID>/output-dir" > /tmp/fk_outdir.json
 ```
 
 ### 1b. Derive slug and output dir
@@ -182,7 +182,7 @@ Only run if any entity is missing `media_id`.
 # For each entity missing media_id, submit GENERATE_CHARACTER_IMAGE
 # Batch 5 at a time
 for CID in <missing_ids>:
-  curl -X POST http://127.0.0.1:8100/api/requests \
+  curl -X POST http://127.0.0.1:8743/api/requests \
     -H "Content-Type: application/json" \
     -d '{"type":"GENERATE_CHARACTER_IMAGE","character_id":"<CID>","project_id":"<PID>"}'
 ```
@@ -199,7 +199,7 @@ Only run after all refs have `media_id`.
 
 ```bash
 # For each scene with image_status != COMPLETED:
-curl -X POST http://127.0.0.1:8100/api/requests \
+curl -X POST http://127.0.0.1:8743/api/requests \
   -H "Content-Type: application/json" \
   -d '{"type":"GENERATE_IMAGE","scene_id":"<SID>","project_id":"<PID>","video_id":"<VID>","orientation":"<ORIENTATION>"}'
 ```
@@ -215,7 +215,7 @@ Batch 5 at a time. Poll every 15s. Submit next batch when current batch complete
 Only run after all scene images COMPLETED.
 
 ```bash
-curl -X POST http://127.0.0.1:8100/api/requests \
+curl -X POST http://127.0.0.1:8743/api/requests \
   -H "Content-Type: application/json" \
   -d '{"type":"GENERATE_VIDEO","scene_id":"<SID>","project_id":"<PID>","video_id":"<VID>","orientation":"<ORIENTATION>"}'
 ```
@@ -230,7 +230,7 @@ Only run after all videos COMPLETED. Uses `/fk-review-video` to catch AI generat
 
 ```bash
 # Run light review on all completed videos
-curl -X POST "http://127.0.0.1:8100/api/videos/<VID>/review?project_id=<PID>&mode=light&orientation=<ORIENTATION>"
+curl -X POST "http://127.0.0.1:8743/api/videos/<VID>/review?project_id=<PID>&mode=light&orientation=<ORIENTATION>"
 # Poll until complete
 ```
 
@@ -276,7 +276,7 @@ for cycle in range(2):
 Only run after review passes (or max review cycles exhausted). TIER_TWO only.
 
 ```bash
-curl -X POST http://127.0.0.1:8100/api/requests \
+curl -X POST http://127.0.0.1:8743/api/requests \
   -H "Content-Type: application/json" \
   -d '{"type":"UPSCALE_VIDEO","scene_id":"<SID>","project_id":"<PID>","video_id":"<VID>","orientation":"<ORIENTATION>"}'
 ```
@@ -291,11 +291,11 @@ Runs in parallel with Stage 2 or 3. Requires `narrator_text` on scenes and a voi
 
 ```bash
 # Check templates
-curl -s http://127.0.0.1:8100/api/tts/templates
+curl -s http://127.0.0.1:8743/api/tts/templates
 # Pick template name (e.g. vi_male_narrator)
 
 # Trigger narration for video
-curl -X POST http://127.0.0.1:8100/api/videos/<VID>/narrate \
+curl -X POST http://127.0.0.1:8743/api/videos/<VID>/narrate \
   -H "Content-Type: application/json" \
   -d '{"template":"<template_name>"}'
 ```
@@ -475,7 +475,7 @@ Cycle 12 / next poll in 15s...
 | Upscale TIER_ONE error | Account is TIER_ONE — skip `--upscale` |
 | Downloads 4KB XML error | Write URL to temp file, re-curl |
 | TTS `torch not found` | Set `TTS_PYTHON_BIN=/opt/homebrew/bin/python3.10` in server env |
-| Worker stalled | POST http://127.0.0.1:8100/api/worker/restart or restart server |
+| Worker stalled | POST http://127.0.0.1:8743/api/worker/restart or restart server |
 
 ---
 

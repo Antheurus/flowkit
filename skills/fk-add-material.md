@@ -37,7 +37,7 @@ The `scene_prefix` is baked into each scene's `prompt` field when the scene is c
 ## List All Materials
 
 ```bash
-curl -s http://127.0.0.1:8100/api/materials
+curl -s http://127.0.0.1:8743/api/materials
 ```
 
 Returns built-in + any custom materials you've added.
@@ -47,7 +47,7 @@ Returns built-in + any custom materials you've added.
 ## Create a Custom Material
 
 ```bash
-curl -X POST http://127.0.0.1:8100/api/materials \
+curl -X POST http://127.0.0.1:8743/api/materials \
   -H "Content-Type: application/json" \
   -d '{
     "id": "watercolor",
@@ -75,7 +75,7 @@ curl -X POST http://127.0.0.1:8100/api/materials \
 ## Delete a Custom Material
 
 ```bash
-curl -X DELETE http://127.0.0.1:8100/api/materials/watercolor
+curl -X DELETE http://127.0.0.1:8743/api/materials/watercolor
 ```
 
 **Note:** Built-in materials (`realistic`, `3d_pixar`, `anime`, `stop_motion`, `minecraft`, `oil_painting`) cannot be deleted.
@@ -87,7 +87,7 @@ curl -X DELETE http://127.0.0.1:8100/api/materials/watercolor
 The `material` field is **required** when creating a project:
 
 ```bash
-curl -X POST http://127.0.0.1:8100/api/projects \
+curl -X POST http://127.0.0.1:8743/api/projects \
   -H "Content-Type: application/json" \
   -d '{
     "name": "My Animated Story",

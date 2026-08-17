@@ -23,14 +23,14 @@ a. **Explicit arg** — if user passed `<video_id>` to the skill, use that.
 
 b. **Active project** — read `GET /api/active-project`:
 ```bash
-ACTIVE=$(curl -s http://127.0.0.1:8100/api/active-project)
+ACTIVE=$(curl -s http://127.0.0.1:8743/api/active-project)
 VID=$(echo "$ACTIVE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('video_id',''))")
 PNAME=$(echo "$ACTIVE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('project_name','(none)'))")
 ```
 
 c. **No active project / no video_id** — list recent projects and ask user to pick:
 ```bash
-curl -s http://127.0.0.1:8100/api/projects?limit=10 | python3 -c "
+curl -s http://127.0.0.1:8743/api/projects?limit=10 | python3 -c "
 import sys, json
 for p in json.load(sys.stdin):
     print(f\"  {p['id']}  {p.get('name','-')}\")"
@@ -61,7 +61,7 @@ The query param overrides the HTML's hardcoded default, so the board always load
 Review Board running at http://localhost:8200?video_id=<VID>
 - Project: <project_name>
 - Video ID: <VID>
-- Scenes loaded via API proxy (localhost:8100)
+- Scenes loaded via API proxy (localhost:8743)
 - Videos served from output/<project>/review_full/ (fallback: raw/)
 - Feedback saves to tools/review_feedback.json
 ```

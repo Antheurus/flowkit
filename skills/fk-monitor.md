@@ -19,7 +19,7 @@ Usage: `/fk-monitor [project_id] [orientation] [--download] [--interval N]`
 ## Prerequisites
 
 ```bash
-curl -s http://127.0.0.1:8100/health
+curl -s http://127.0.0.1:8743/health
 # extension_connected must be true
 ```
 
@@ -32,7 +32,7 @@ Telegram notifications require the `mcp__telegram__reply` tool to be available i
 If no `project_id` supplied, fetch the most recent project:
 
 ```bash
-curl -s http://127.0.0.1:8100/api/projects
+curl -s http://127.0.0.1:8743/api/projects
 # Use the last item in the array → id, name
 ```
 
@@ -59,7 +59,7 @@ Examples:
 Get output dir (also creates directory structure):
 
 ```bash
-curl -s http://127.0.0.1:8100/api/projects/<PID>/output-dir
+curl -s http://127.0.0.1:8743/api/projects/<PID>/output-dir
 # Returns: {"slug": "...", "path": "output/...", "meta": {...}}
 ```
 
@@ -68,10 +68,10 @@ curl -s http://127.0.0.1:8100/api/projects/<PID>/output-dir
 ## Step 2: Resolve video_id and scene count
 
 ```bash
-curl -s "http://127.0.0.1:8100/api/videos?project_id=<PID>"
+curl -s "http://127.0.0.1:8743/api/videos?project_id=<PID>"
 # Use first video → id, get scene count
 
-curl -s "http://127.0.0.1:8100/api/scenes?video_id=<VID>"
+curl -s "http://127.0.0.1:8743/api/scenes?video_id=<VID>"
 # Total scene count = N
 ```
 
@@ -111,11 +111,11 @@ Run the poll cycle in a Python inline script. Each cycle:
 
 ```bash
 # Fetch in parallel (run as background + wait)
-curl -s http://127.0.0.1:8100/api/projects/<PID>/characters > /tmp/fk_chars.json &
-curl -s "http://127.0.0.1:8100/api/scenes?video_id=<VID>" > /tmp/fk_scenes.json &
-curl -s "http://127.0.0.1:8100/api/requests?status=PENDING" > /tmp/fk_pending.json &
-curl -s "http://127.0.0.1:8100/api/requests?status=PROCESSING" > /tmp/fk_processing.json &
-curl -s "http://127.0.0.1:8100/api/requests?status=FAILED" > /tmp/fk_failed.json &
+curl -s http://127.0.0.1:8743/api/projects/<PID>/characters > /tmp/fk_chars.json &
+curl -s "http://127.0.0.1:8743/api/scenes?video_id=<VID>" > /tmp/fk_scenes.json &
+curl -s "http://127.0.0.1:8743/api/requests?status=PENDING" > /tmp/fk_pending.json &
+curl -s "http://127.0.0.1:8743/api/requests?status=PROCESSING" > /tmp/fk_processing.json &
+curl -s "http://127.0.0.1:8743/api/requests?status=FAILED" > /tmp/fk_failed.json &
 wait
 ```
 

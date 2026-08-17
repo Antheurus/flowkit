@@ -5,10 +5,10 @@ Usage: `/fk-thumbnail [project_id]`
 ## Step 1: Load project context
 
 ```bash
-curl -s http://127.0.0.1:8100/api/projects/<PID>
-curl -s "http://127.0.0.1:8100/api/videos?project_id=<PID>"
-curl -s "http://127.0.0.1:8100/api/projects/<PID>/characters"
-curl -s "http://127.0.0.1:8100/api/scenes?video_id=<VID>"
+curl -s http://127.0.0.1:8743/api/projects/<PID>
+curl -s "http://127.0.0.1:8743/api/videos?project_id=<PID>"
+curl -s "http://127.0.0.1:8743/api/projects/<PID>/characters"
+curl -s "http://127.0.0.1:8743/api/scenes?video_id=<VID>"
 ```
 
 Extract and understand:
@@ -102,12 +102,12 @@ SEQUENTIALLY with 8s cooldown between each:
 
 ```bash
 # Get project output directory
-PROJ_OUT=$(curl -s http://127.0.0.1:8100/api/projects/<PID>/output-dir)
+PROJ_OUT=$(curl -s http://127.0.0.1:8743/api/projects/<PID>/output-dir)
 OUTDIR=$(echo "$PROJ_OUT" | python3 -c "import sys,json; print(json.load(sys.stdin)['path'])")
 mkdir -p "${OUTDIR}/thumbnails"
 
 for i in 1 2 3 4; do
-  curl -s -m 90 -X POST "http://127.0.0.1:8100/api/projects/<PID>/generate-thumbnail" \
+  curl -s -m 90 -X POST "http://127.0.0.1:8743/api/projects/<PID>/generate-thumbnail" \
     -H "Content-Type: application/json" \
     -d '{
       "prompt": "<variant_prompt_with_text_embedded>",

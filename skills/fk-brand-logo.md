@@ -152,7 +152,7 @@ fi
 ## Step 8: Apply to thumbnails (if --thumbnails)
 
 ```bash
-PROJ_OUT=$(curl -s http://127.0.0.1:8100/api/projects/<PID>/output-dir)
+PROJ_OUT=$(curl -s http://127.0.0.1:8743/api/projects/<PID>/output-dir)
 OUTDIR=$(echo "$PROJ_OUT" | python3 -c "import sys,json; print(json.load(sys.stdin)['path'])")
 
 for thumb in "${OUTDIR}/thumbnails/thumbnail_v"*_yt.png; do

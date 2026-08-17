@@ -28,7 +28,7 @@ The `endImage` is the **CHILD scene's image** (the next scene's image_media_id),
 
 ```bash
 # All scene images must be ready with UUID media_ids
-curl -s "http://127.0.0.1:8100/api/scenes?video_id=<VID>"
+curl -s "http://127.0.0.1:8743/api/scenes?video_id=<VID>"
 ```
 
 ABORT if any scene is missing `${ori}_image_media_id` (UUID).
@@ -38,7 +38,7 @@ ABORT if any scene is missing `${ori}_image_media_id` (UUID).
 For each scene that has a CHILD in the chain (i.e. some other scene's `parent_scene_id == this.id`), set its `${ori}_end_scene_media_id` to that **child** scene's `${ori}_image_media_id`:
 
 ```bash
-curl -X PATCH http://127.0.0.1:8100/api/scenes/<SID> \
+curl -X PATCH http://127.0.0.1:8743/api/scenes/<SID> \
   -H "Content-Type: application/json" \
   -d '{"${ori}_end_scene_media_id": "<child_scene_image_media_id>"}'
 ```
@@ -59,7 +59,7 @@ Logic:
 The server handles throttling automatically (max 5 concurrent, 10s cooldown). The worker reads `${ori}_end_scene_media_id` from each scene (set in Step 2) and passes it as `endImage` to the API. This triggers `start_end_frame_2_video` (i2v_fl) instead of plain `frame_2_video` (i2v).
 
 ```bash
-curl -X POST http://127.0.0.1:8100/api/requests/batch \
+curl -X POST http://127.0.0.1:8743/api/requests/batch \
   -H "Content-Type: application/json" \
   -d '{
     "requests": [
@@ -74,7 +74,7 @@ Build the `requests` array from ALL scenes in display_order. Do NOT manually bat
 Poll aggregate status every 30s until done:
 
 ```bash
-curl -s "http://127.0.0.1:8100/api/requests/batch-status?video_id=<VID>&type=GENERATE_VIDEO"
+curl -s "http://127.0.0.1:8743/api/requests/batch-status?video_id=<VID>&type=GENERATE_VIDEO"
 # Wait for: "done": true
 # If "all_succeeded": false → some failed, check individual failures
 ```

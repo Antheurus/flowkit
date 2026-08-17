@@ -12,7 +12,7 @@ Usage: `/fk-refresh-urls <video_id> [--project-id <PID>]`
 
 ```bash
 # Extension must be connected with flow key
-curl -s http://127.0.0.1:8100/api/flow/status
+curl -s http://127.0.0.1:8743/api/flow/status
 # Must show: {"connected": true, "flow_key_present": true}
 # If flow_key_present is false: open/refresh a Google Flow tab in Chrome
 ```
@@ -21,7 +21,7 @@ curl -s http://127.0.0.1:8100/api/flow/status
 
 ```bash
 VID="<video_id>"
-PID=$(curl -s "http://127.0.0.1:8100/api/videos/${VID}" | python3 -c "import sys,json; print(json.load(sys.stdin)['project_id'])")
+PID=$(curl -s "http://127.0.0.1:8743/api/videos/${VID}" | python3 -c "import sys,json; print(json.load(sys.stdin)['project_id'])")
 echo "Project: $PID"
 ```
 
@@ -30,7 +30,7 @@ echo "Project: $PID"
 This calls Google Flow's TRPC `flow.getFlow` endpoint, extracts ALL fresh signed URLs from the response, and updates scenes + characters in DB.
 
 ```bash
-curl -s -X POST "http://127.0.0.1:8100/api/flow/refresh-urls/${PID}" | python3 -c "
+curl -s -X POST "http://127.0.0.1:8743/api/flow/refresh-urls/${PID}" | python3 -c "
 import sys, json
 r = json.load(sys.stdin)
 print(f\"Refreshed: {r.get('refreshed', 0)} URLs (found {r.get('found', 0)} total)\")
@@ -51,7 +51,7 @@ The server matches each URL's media_id against `*_media_id` fields on scenes and
 
 ```bash
 # Check a few scenes have valid URLs
-curl -s "http://127.0.0.1:8100/api/scenes?video_id=${VID}" | python3 -c "
+curl -s "http://127.0.0.1:8743/api/scenes?video_id=${VID}" | python3 -c "
 import sys, json
 scenes = sorted(json.load(sys.stdin), key=lambda s: s['display_order'])
 
@@ -93,14 +93,14 @@ If the bulk TRPC refresh doesn't cover all media (e.g., TRPC response is partial
 
 ```bash
 # Get a fresh URL for a specific media_id
-curl -s "http://127.0.0.1:8100/api/flow/media/<MEDIA_ID>"
+curl -s "http://127.0.0.1:8743/api/flow/media/<MEDIA_ID>"
 # Returns: {fifeUrl: "https://...", servingUri: "https://...", ...}
 ```
 
 Then update the scene manually:
 
 ```bash
-curl -X PATCH "http://127.0.0.1:8100/api/scenes/<SID>" \
+curl -X PATCH "http://127.0.0.1:8743/api/scenes/<SID>" \
   -H "Content-Type: application/json" \
   -d '{"horizontal_video_url": "<FRESH_URL>"}'
 ```
