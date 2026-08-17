@@ -1,5 +1,72 @@
 # Flow Kit Progress
 
+## Session — 2026-08-17 (cont 3) — v1.2.4 (one design-token namespace, one shipped typeface)
+
+Started as a plain question — which libraries the dashboard styles with — and the inventory itself
+turned up the defect. Stack is Tailwind v4 (config-less, everything in `@theme` inside
+`dashboard/src/index.css`), shadcn at style `radix-nova` over radix-ui primitives, CVA + clsx +
+tailwind-merge, lucide icons, tw-animate-css. My first read of the file was wrong and is worth
+recording so nobody re-derives it: I called the shadcn slots "still at light defaults, so new
+components will render light", but `<html class="dark">` is set and the `.dark` block sat *below*
+`:root` at equal specificity (0,1,0), so it won on source order and popover et al. resolved dark all
+along. Driving the live dev server is what corrected it — `getComputedStyle` on the real page, not a
+read of the cascade.
+
+What the browser did show was a genuine name collision. The file carried two token namespaces under
+one set of names: the product palette (`--accent` = brand blue, `--muted` = muted *text*, read
+directly as `var(--x)` by 118 and 17 call sites respectively) and shadcn's semantic slots, where
+`--accent` means the subtle hover *surface* and `--muted` the muted *surface*. Nothing errors — the
+two meanings just quietly overwrite each other. Live consequence: `bg-muted` computed
+`rgb(100,116,139)`, so nine Progress tracks on the dashboard home painted as solid mid-slate bars,
+which reads as "this bar is filled" on a stage that is 0/7; the same value backed table-header,
+tabs-list, avatar-fallback, skeleton and every ghost/outline hover. Second half of the same
+collision: `text-muted-foreground` resolved to `oklch(0.708 0 0)`, a neutral grey that disagreed with
+the `#64748b` the 118 hand-written sites use, so the app ran two muted greys side by side.
+
+Fix keeps the palette as the single source and translates at the boundary rather than renaming 135
+call sites — `@theme inline` now maps `--color-muted` and `--color-accent` to a new `--elevated`
+(`#222240`, which continues the existing ladder 13→19→26→**34**→37 in the R/G channel), and
+`--color-muted-foreground` to the palette's own `--muted`. Every other shadcn slot is now *derived*
+(`--primary: var(--accent)`, `--popover: var(--card)`, `--destructive: var(--red)`, …) instead of
+restating a literal, the dead light `:root` values and the duplicate `.dark` block are gone, and the
+greyscale leftovers were pointed at real palette colours: `--ring` → brand blue, `--chart-1..5` →
+blue/green/yellow/red/purple, `--sidebar-*` → the navy family. `--primary-foreground` went
+`#e2e8f0` → `#ffffff`, lifting button-label contrast 2.98:1 → 3.68:1.
+
+Typography was the second ask and had the same shape — two owners, and the one that won was the one
+nobody shipped. `body` set `font-family: 'DM Mono', 'Fira Code', 'Cascadia Code', ui-monospace` as a
+plain unlayered rule while `@layer base { html { @apply font-sans } }` set Geist; unlayered beats a
+layer, so mono won everywhere — except none of those three mono families is a webfont here, so the
+product's primary typeface rendered only because this machine happens to have DM Mono installed, and
+anyone else fell through to `ui-monospace`. Meanwhile `@fontsource-variable/geist` *was* downloaded
+on every load to style exactly three titles (`font-heading` on Card/Sheet/Dialog). Swapped to
+`@fontsource-variable/geist-mono`, dropped the sans package, deleted the `font-family` line from
+`body`, and pointed `--font-sans`/`--font-mono`/`--font-heading` at the one family so the sole owner
+is `@layer base { body { … font-sans } }`.
+
+Verified against the running dev server on :5173 (note it binds IPv6 only — `127.0.0.1:5173` gives
+ERR_CONNECTION_REFUSED, `localhost` works). Before/after `getComputedStyle`: `bg-muted`
+`rgb(100,116,139)` → `rgb(34,34,64)`; `text-muted-foreground` → `rgb(100,116,139)`; elements painted
+the old bright slate 9 → 0; `--ring` → `#3b82f6`; body font → `Geist Mono Variable`, `document.fonts`
+reporting it loaded. `npm run build` (tsc -b + vite) green, 1874 modules in 342ms, and the built CSS
+holds 9 `Geist Mono` references against 0 for `DM Mono` and 0 for `Geist Variable` — i.e. the
+unshipped font is gone and the unused one is no longer downloaded. Drove home, /projects,
+/projects/:id Overview + Pipeline and /logs at 1440x900 and looked at each, plus hover on the ghost
+and outline buttons (`oklab(0.268 …/0.5)` and `oklab(0.282 …/0.5)`, both the new elevated navy rather
+than the old slate). One thing verification could *not* cover: `bg-accent` is used nowhere in source,
+so Tailwind never emits the class and the probe reads `rgba(0,0,0,0)` — that half of the fix is a
+closed trap for the next `shadcn add`, not an observed rendering.
+
+Two contrast figures left deliberately alone because they are brand decisions, not defects to fix
+unilaterally: white on `#3b82f6` is 3.68:1 and `--muted` `#64748b` on `--card` is 3.55:1, both under
+AA's 4.5:1 for 12–13px text. The one-line fixes are `--primary: var(--accent-dim)` (6.70:1) and
+lifting `--muted` toward `#8494ad`; the second would move 118 call sites at once, which is exactly
+why it is the user's call. Touched `dashboard/src/index.css`, `dashboard/package.json`,
+`dashboard/package-lock.json` only — the `agent/*` modifications in the tree predate this session and
+were left untouched.
+
+---
+
 ## Session — 2026-08-17 (cont 2) — v1.2.3 (status/severity primitives unified across the whole dashboard)
 
 Follow-on to the v1.2.2 styling pass, after the user pushed back on the Needs Attention treatment

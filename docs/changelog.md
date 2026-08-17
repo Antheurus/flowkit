@@ -1,5 +1,17 @@
 # Flow Kit Changelog
 
+## v1.2.4 — Progress bars read correctly again, and the dashboard finally ships its own font
+
+- **Empty progress bars no longer look full.** The track behind every progress bar was painting a solid light-grey band, so a stage sitting at 0/7 looked like a bar with something in it. Tracks are now a dark, recessed line — the blue fill is the only thing you see.
+- **The same grey is used for all secondary text.** Timestamps, captions and helper text in the shadcn-based parts of the app were rendering in a slightly different grey than the rest of the dashboard. One grey now, everywhere.
+- **The dashboard now ships the font it uses.** Until now the interface asked for DM Mono but never bundled it — it only appeared if your computer already had that font, and otherwise you got whatever monospace your system fell back to. The dashboard now bundles Geist Mono and uses it for everything, so it looks identical on every machine and browser.
+- **Button labels are easier to read.** Text on blue buttons is now pure white instead of off-white.
+- **Focus outlines are blue instead of grey**, matching the rest of the interface.
+
+No action required — just reload the dashboard after updating.
+
+---
+
 ## v1.2.3 — Status indicators now look and behave the same everywhere
 
 - **The Needs Attention list is back to a proper flagged box** (not the plain border-only version from the last release) — same treatment used for hard failures everywhere else in the dashboard.
