@@ -10,6 +10,7 @@ import { sceneStageStatus, videoStageBreakdown } from '../lib/stageStats'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardAction } from '../components/ui/card'
 import { Progress } from '../components/ui/progress'
 import { Badge } from '../components/ui/badge'
+import AccentCard from '../components/ui/accent-card'
 
 type VideoWithProject = Video & { projectName: string; projectId: string }
 type T = (key: TranslationKey, params?: Record<string, string | number>) => string
@@ -195,15 +196,13 @@ export default function DashboardPage() {
             {attentionRows.length === 0 ? (
               <div className="text-xs py-6 text-center" style={{ color: 'var(--muted)' }}>{t('dashboard.attention.empty')}</div>
             ) : (
-              <div className="flex flex-col">
-                {attentionRows.map((a, i) => (
-                  <div
+              <div className="flex flex-col gap-2">
+                {attentionRows.map(a => (
+                  <AccentCard
                     key={a.id}
-                    className="flex flex-col gap-1 py-2.5 pl-3 pr-1 cursor-pointer transition-colors hover:bg-[var(--surface)]"
-                    style={{
-                      borderLeft: '2px solid var(--red)',
-                      borderBottom: i !== attentionRows.length - 1 ? '1px solid var(--border)' : undefined,
-                    }}
+                    accentColor="var(--red)"
+                    variant="alert"
+                    className="p-2.5 flex flex-col gap-1 cursor-pointer transition-opacity hover:opacity-80"
                     onClick={() => a.projectId && navigate(`/projects/${a.projectId}?tab=pipeline`)}
                   >
                     <div className="flex items-center gap-2">
@@ -212,7 +211,7 @@ export default function DashboardPage() {
                       <span className="ml-auto text-[9px]" style={{ color: 'var(--muted)' }}>{new Date(a.time).toLocaleTimeString()}</span>
                     </div>
                     {a.error && <span className="text-[10px] leading-snug" style={{ color: 'var(--muted)' }}>{a.error.slice(0, 140)}</span>}
-                  </div>
+                  </AccentCard>
                 ))}
               </div>
             )}

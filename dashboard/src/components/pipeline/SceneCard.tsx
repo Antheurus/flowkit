@@ -1,7 +1,9 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardContent } from '../ui/card'
+import StatusDot from '../ui/status-dot'
 import type { Scene, StatusType } from '../../types'
 import { useTranslation } from '../../i18n/useTranslation'
 import { statusLabel, stageTitleLabel } from '../../i18n/labels'
+import { STATUS_COLOR, VERDICT_COLORS } from '../../lib/statusColors'
 
 export type SceneStage = 'image' | 'video' | 'upscale'
 
@@ -13,26 +15,11 @@ interface SceneCardProps {
   onClick: () => void
 }
 
-const STATUS_COLORS: Record<StatusType, string> = {
-  COMPLETED: 'var(--green)',
-  PROCESSING: 'var(--yellow)',
-  PENDING: 'var(--muted)',
-  FAILED: 'var(--red)',
-}
-
 const STATUS_TINT: Record<StatusType, string> = {
   COMPLETED: 'linear-gradient(135deg, rgba(34,197,94,.07), rgba(59,130,246,.05))',
   PROCESSING: 'linear-gradient(135deg, rgba(245,158,11,.10), rgba(245,158,11,.02))',
   FAILED: 'linear-gradient(135deg, rgba(239,68,68,.10), rgba(239,68,68,.02))',
   PENDING: 'none',
-}
-
-const VERDICT_COLORS: Record<string, string> = {
-  excellent: 'var(--green)',
-  good: 'var(--green)',
-  acceptable: 'var(--yellow)',
-  poor: 'var(--red)',
-  unusable: 'var(--red)',
 }
 
 function getStageStatus(scene: Scene, stage: SceneStage): StatusType {
@@ -64,9 +51,9 @@ export default function SceneCard({ scene, stage, retries, verdict, onClick }: S
           <CardAction>
             <span
               className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[9px] tracking-widest border"
-              style={{ borderColor: 'var(--border)', color: STATUS_COLORS[status] }}
+              style={{ borderColor: 'var(--border)', color: STATUS_COLOR[status] }}
             >
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: STATUS_COLORS[status] }} />
+              <StatusDot status={status} />
               {statusLabel(t, status)}
             </span>
           </CardAction>

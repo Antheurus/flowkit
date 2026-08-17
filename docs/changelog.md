@@ -1,5 +1,11 @@
 # Flow Kit Changelog
 
+## v1.2.3 — Status indicators now look and behave the same everywhere
+
+- **The Needs Attention list is back to a proper flagged box** (not the plain border-only version from the last release) — same treatment used for hard failures everywhere else in the dashboard.
+- **Every status dot in the app is now the same shape and color** — a few places (the pipeline stage legend, in particular) were quietly using square dots while everything else used round ones.
+- No behavior changes, purely visual consistency.
+
 ## v1.2.2 — Dashboard styling cleanup
 
 - **Needs Attention list (Dashboard)** no longer looks like a stack of boxes — cleaner flagged rows with a thin red accent bar.

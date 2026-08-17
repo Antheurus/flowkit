@@ -8,16 +8,10 @@ import { statusLabel, chainLabel } from '../i18n/labels'
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card'
 import { Badge } from '../components/ui/badge'
 import ProjectSwitcher from '../components/projects/ProjectSwitcher'
+import StatusDot from '../components/ui/status-dot'
 
 interface ActiveProject {
   project_id: string
-}
-
-const STATUS_COLOR: Record<string, string> = {
-  COMPLETED: 'var(--green)',
-  PROCESSING: 'var(--yellow)',
-  FAILED: 'var(--red)',
-  PENDING: 'var(--muted)',
 }
 
 function AttemptBadge({ n }: { n: number }) {
@@ -36,10 +30,6 @@ function AttemptBadge({ n }: { n: number }) {
       {t('storyboard.attempts', { n })}
     </span>
   )
-}
-
-function StageDot({ status }: { status: string }) {
-  return <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: STATUS_COLOR[status] ?? 'var(--muted)' }} />
 }
 
 export default function StoryboardPage() {
@@ -120,7 +110,7 @@ export default function StoryboardPage() {
                     <span className="text-[11px] font-medium truncate">{ch.name}</span>
                     <div className="flex items-center gap-1">
                       <Badge variant="outline" className="text-[8px]">{ch.entity_type}</Badge>
-                      <StageDot status={ch.media_id ? 'COMPLETED' : 'PENDING'} />
+                      <StatusDot status={ch.media_id ? 'COMPLETED' : 'PENDING'} />
                     </div>
                   </div>
                 </div>
@@ -158,7 +148,7 @@ export default function StoryboardPage() {
                               const n = attemptCount(requests, s.id, stage)
                               return (
                                 <span key={stage} className="inline-flex items-center gap-1 text-[9px]" style={{ color: 'var(--muted)' }}>
-                                  <StageDot status={status} />
+                                  <StatusDot status={status} />
                                   {stage}:{statusLabel(t, status)}
                                   <AttemptBadge n={n} />
                                 </span>

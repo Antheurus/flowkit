@@ -4,6 +4,7 @@ import { useTranslation } from '../i18n/useTranslation'
 import type { TranslationKey } from '../i18n/translations'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/card'
 import { Badge } from '../components/ui/badge'
+import StatusDot from '../components/ui/status-dot'
 
 interface HealthResponse {
   status: string
@@ -73,7 +74,7 @@ export default function GuidePage() {
         <CardContent>
           {!reachable ? (
             <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--red)' }}>
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--red)' }} />
+              <StatusDot color="var(--red)" />
               {t('guide.status.unreachable')}
             </div>
           ) : !health ? (
@@ -81,18 +82,18 @@ export default function GuidePage() {
           ) : (
             <div className="flex flex-wrap gap-6">
               <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--green)' }} />
+                <StatusDot color="var(--green)" />
                 <span className="text-xs" style={{ color: 'var(--text)' }}>{t('guide.status.agentRunning')}</span>
                 <Badge variant="outline">v{health.version}</Badge>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: health.extension_connected ? 'var(--green)' : 'var(--red)' }} />
+                <StatusDot color={health.extension_connected ? 'var(--green)' : 'var(--red)'} />
                 <span className="text-xs" style={{ color: health.extension_connected ? 'var(--green)' : 'var(--red)' }}>
                   {health.extension_connected ? t('guide.status.extensionConnected') : t('guide.status.extensionDisconnected')}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full" style={{ background: health.ws.authenticated_connections > 0 ? 'var(--green)' : 'var(--muted)' }} />
+                <StatusDot color={health.ws.authenticated_connections > 0 ? 'var(--green)' : 'var(--muted)'} />
                 <span className="text-xs" style={{ color: 'var(--muted)' }}>
                   {t('guide.status.ws', { active: health.ws.active_connections, authenticated: health.ws.authenticated_connections })}
                 </span>

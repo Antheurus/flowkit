@@ -4,22 +4,14 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs'
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '../ui/accordion'
 import { Table, TableBody, TableRow, TableCell } from '../ui/table'
 import { Button } from '../ui/button'
+import StatusDot from '../ui/status-dot'
+import AccentCard from '../ui/accent-card'
 import { useTranslation } from '../../i18n/useTranslation'
 import { statusLabel, dimensionLabel, stageLowerLabel } from '../../i18n/labels'
 import type { Scene, Character, Request, SceneReview, StatusType } from '../../types'
+import { STATUS_COLOR, VERDICT_COLORS } from '../../lib/statusColors'
 
 type SceneStage = 'image' | 'video' | 'upscale'
-
-const STATUS_COLORS: Record<StatusType, string> = {
-  COMPLETED: 'var(--green)',
-  PROCESSING: 'var(--yellow)',
-  PENDING: 'var(--muted)',
-  FAILED: 'var(--red)',
-}
-
-const VERDICT_COLORS: Record<string, string> = {
-  excellent: 'var(--green)', good: 'var(--green)', acceptable: 'var(--yellow)', poor: 'var(--red)', unusable: 'var(--red)',
-}
 
 const SEV_COLORS: Record<string, string> = {
   CRITICAL: 'var(--red)', HIGH: 'var(--yellow)', MINOR: 'var(--muted)',
@@ -100,9 +92,9 @@ export default function SceneDetailSheet({
           <div className="flex items-center gap-2.5 mt-3">
             <span
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[10px] tracking-widest border"
-              style={{ borderColor: 'var(--border)', color: STATUS_COLORS[status] }}
+              style={{ borderColor: 'var(--border)', color: STATUS_COLOR[status] }}
             >
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: STATUS_COLORS[status] }} />
+              <StatusDot status={status} />
               {statusLabel(t, status)}
             </span>
             <span className="text-[10px] tracking-wide" style={{ color: 'var(--muted)' }}>
@@ -122,12 +114,12 @@ export default function SceneDetailSheet({
             <TabsContent value="output">
               <div className="flex flex-col gap-5 pt-4">
                 {status === 'FAILED' && currentRequest?.error_message && (
-                  <div className="rounded-md p-3.5" style={{ border: '1px solid var(--red)', borderLeftWidth: 3, background: 'rgba(239,68,68,.07)' }}>
+                  <AccentCard accentColor="var(--red)" variant="alert" className="p-3.5">
                     <div className="text-[10px] tracking-widest mb-2" style={{ color: 'var(--red)' }}>{t('sceneSheet.error')}</div>
                     <pre className="m-0 text-[11px] leading-relaxed whitespace-pre-wrap" style={{ color: '#fca5a5', fontFamily: 'inherit' }}>
                       {currentRequest.error_message}
                     </pre>
-                  </div>
+                  </AccentCard>
                 )}
 
                 <div>
@@ -227,22 +219,22 @@ export default function SceneDetailSheet({
                 )}
 
                 {reviewRunning && (
-                  <div className="rounded-md p-4" style={{ border: '1px solid var(--yellow)', background: 'rgba(245,158,11,.06)' }}>
+                  <AccentCard accentColor="var(--yellow)" variant="alert" className="p-4">
                     <div className="flex items-center gap-2.5 text-[11px] tracking-wide" style={{ color: 'var(--yellow)' }}>
-                      <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--yellow)', animation: 'pulse 1.2s ease-in-out infinite' }} />
+                      <StatusDot color="var(--yellow)" pulse />
                       {t('sceneSheet.analyzing', { mode: runningMode === 'deep' ? t('sceneSheet.modeDeep') : t('sceneSheet.modeLight') })}
                     </div>
                     <div className="mt-3 text-[10px]" style={{ color: 'var(--muted)' }}>
                       {t('sceneSheet.analyzingBody')}
                     </div>
-                  </div>
+                  </AccentCard>
                 )}
 
                 {review && !reviewRunning && (
                   <div className="flex flex-col gap-5">
-                    <div
-                      className="rounded-md p-4 flex items-center justify-between gap-5"
-                      style={{ border: '1px solid var(--border)', borderLeft: `3px solid ${VERDICT_COLORS[review.verdict] ?? 'var(--muted)'}`, background: 'var(--surface)' }}
+                    <AccentCard
+                      accentColor={VERDICT_COLORS[review.verdict] ?? 'var(--muted)'}
+                      className="p-4 flex items-center justify-between gap-5"
                     >
                       <div className="flex flex-col gap-1.5">
                         <span className="text-[10px] tracking-widest" style={{ color: 'var(--muted)' }}>{t('sceneSheet.verdict')}</span>
@@ -252,7 +244,7 @@ export default function SceneDetailSheet({
                         <span className="text-[10px] tracking-widest" style={{ color: 'var(--muted)' }}>{t('sceneSheet.overall')}</span>
                         <span className="text-2xl" style={{ color: VERDICT_COLORS[review.verdict] ?? 'var(--text)' }}>{review.overall_score.toFixed(1)}</span>
                       </div>
-                    </div>
+                    </AccentCard>
 
                     <div>
                       <div className="text-[10px] tracking-widest mb-2.5" style={{ color: 'var(--muted)' }}>{t('sceneSheet.dimensionScores')}</div>
@@ -274,11 +266,11 @@ export default function SceneDetailSheet({
                         <div className="text-[10px] tracking-widest mb-2.5" style={{ color: 'var(--muted)' }}>{t('sceneSheet.detectedErrors', { n: review.errors.length })}</div>
                         <div className="flex flex-col gap-2">
                           {review.errors.map((e, i) => (
-                            <div key={i} className="rounded-md p-3 flex gap-3.5 items-start" style={{ border: '1px solid var(--border)', borderLeft: `3px solid ${SEV_COLORS[e.severity] ?? 'var(--muted)'}`, background: 'var(--surface)' }}>
+                            <AccentCard key={i} accentColor={SEV_COLORS[e.severity] ?? 'var(--muted)'} className="p-3 flex gap-3.5 items-start">
                               <span className="text-[9px] tracking-widest px-1.5 py-0.5 rounded flex-shrink-0" style={{ color: SEV_COLORS[e.severity] ?? 'var(--muted)' }}>{e.severity}</span>
                               <span className="text-[11px] flex-shrink-0" style={{ color: 'var(--muted)', width: 92 }}>{e.time_range}</span>
                               <span className="text-[11px] leading-relaxed" style={{ color: 'var(--text)' }}>{e.description}</span>
-                            </div>
+                            </AccentCard>
                           ))}
                         </div>
                       </div>
@@ -324,7 +316,7 @@ export default function SceneDetailSheet({
                       <AccordionItem key={sk} value={sk}>
                         <AccordionTrigger>
                           <div className="flex items-center gap-3 w-full">
-                            <span className="w-1.5 h-1.5 rounded-full" style={{ background: STATUS_COLORS[st] }} />
+                            <StatusDot status={st} />
                             <span className="text-[11px] tracking-widest uppercase">{stageLowerLabel(t, sk)}</span>
                             <span className="text-[10px] ml-auto" style={{ color: 'var(--muted)' }}>{statusLabel(t, st)}</span>
                           </div>

@@ -13,6 +13,8 @@ import { Progress } from '../components/ui/progress'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/tabs'
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '../components/ui/table'
 import { Button } from '../components/ui/button'
+import StatusDot from '../components/ui/status-dot'
+import { STATUS_COLOR } from '../lib/statusColors'
 
 type Tab = 'overview' | 'characters' | 'videos' | 'pipeline'
 const STAGE_KEYS: ('refs' | SceneStage)[] = ['refs', 'image', 'video', 'upscale']
@@ -24,13 +26,6 @@ interface Props {
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleString()
-}
-
-const STATUS_COLOR: Record<string, string> = {
-  COMPLETED: 'var(--green)',
-  PROCESSING: 'var(--yellow)',
-  FAILED: 'var(--red)',
-  PENDING: 'var(--muted)',
 }
 
 export default function ProjectDetailPage({ projectId, onBack }: Props) {
@@ -199,7 +194,7 @@ export default function ProjectDetailPage({ projectId, onBack }: Props) {
                         <span className="text-[10px] tracking-wide" style={{ color: 'var(--muted)' }}>{st === 'PROCESSING' ? t('projectDetail.character.generating') : t('projectDetail.character.noReference')}</span>
                       )}
                       <span className="absolute top-2 left-2 flex items-center gap-1.5 px-1.5 py-0.5 rounded text-[9px] tracking-wide" style={{ background: 'rgba(10,10,20,0.8)', color: STATUS_COLOR[st] }}>
-                        <span className="w-1.5 h-1.5 rounded-full" style={{ background: STATUS_COLOR[st] }} />{statusLabel(t, st)}
+                        <StatusDot status={st} />{statusLabel(t, st)}
                       </span>
                     </div>
                     <div className="p-3 flex flex-col gap-1.5">

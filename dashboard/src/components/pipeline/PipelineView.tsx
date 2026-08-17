@@ -9,6 +9,7 @@ import { count, sceneStageStatus, charStatus, latestRequest, type SceneStage } f
 import { Button } from '../ui/button'
 import { Avatar, AvatarFallback, AvatarGroup } from '../ui/avatar'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
+import StatusDot from '../ui/status-dot'
 import StageNode from './StageNode'
 import SceneCard from './SceneCard'
 import SceneDetailSheet from './SceneDetailSheet'
@@ -181,10 +182,7 @@ export default function PipelineView({ projectId, videoId }: PipelineViewProps) 
           )}
           <div className="w-px h-8" style={{ background: 'var(--border)' }} />
           <div className="flex items-center gap-2">
-            <span
-              className="w-1.5 h-1.5 rounded-full"
-              style={{ background: anyProcessing ? 'var(--yellow)' : 'var(--muted)', animation: anyProcessing ? 'pulse 1.6s ease-in-out infinite' : 'none' }}
-            />
+            <StatusDot color={anyProcessing ? 'var(--yellow)' : 'var(--muted)'} pulse={anyProcessing} />
             <span className="text-[11px]" style={{ color: anyProcessing ? 'var(--yellow)' : 'var(--muted)' }}>
               {stateLabel(t, anyProcessing ? 'RUNNING' : 'IDLE')}
             </span>
@@ -229,7 +227,7 @@ export default function PipelineView({ projectId, videoId }: PipelineViewProps) 
                   <div className="font-semibold truncate" style={{ color: 'var(--text)' }}>{c.name}</div>
                   <div style={{ color: 'var(--muted)', fontSize: '10px' }}>{c.entity_type}</div>
                   <div className="flex items-center gap-1.5" style={{ fontSize: '10px' }}>
-                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: `var(--${st === 'COMPLETED' ? 'green' : st === 'PROCESSING' ? 'yellow' : st === 'FAILED' ? 'red' : 'border'})` }} />
+                    <StatusDot status={st} />
                     <span style={{ color: 'var(--muted)' }}>{statusLabel(t, st)}</span>
                   </div>
                 </div>

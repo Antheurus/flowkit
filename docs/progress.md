@@ -1,5 +1,51 @@
 # Flow Kit Progress
 
+## Session — 2026-08-17 (cont 2) — v1.2.3 (status/severity primitives unified across the whole dashboard)
+
+Follow-on to the v1.2.2 styling pass, after the user pushed back on the Needs Attention treatment
+from that session: the flat left-border-only row I'd shipped was itself the parity break, not the
+fix. A read-only survey (forked subagent) across all six pages plus the pipeline components found
+the app's real established pattern was a box with a neutral `var(--border)` outline and a colored
+3px left accent on `var(--surface)`, already used three times in `SceneDetailSheet.tsx` (review
+verdict card, per-error severity rows, and — closest analog to Needs Attention — a stronger
+fully-red-bordered/tinted variant for a hard request failure). The survey also surfaced two more
+divergences nobody had reported: `STATUS_COLOR`/`VERDICT_COLORS` (the COMPLETED/PROCESSING/
+FAILED/PENDING → green/yellow/red/muted mapping) was independently redefined, byte-identical, in
+four files (`StoryboardPage.tsx`, `ProjectDetailPage.tsx`, `SceneCard.tsx`, `SceneDetailSheet.tsx`),
+and `StageNode.tsx`'s status legend used square dots while every other status indicator in the app
+(~13 occurrences) used round ones.
+
+Confirmed scope with the user first (all 6 pages, visual + primitive consolidation only, no layout
+changes) before touching code, given the first attempt had already gone sideways once. Built three
+shared primitives: `lib/statusColors.ts` (the single `STATUS_COLOR`/`VERDICT_COLORS` source),
+`components/ui/status-dot.tsx` (`<StatusDot status={StatusType}>` or `<StatusDot color={string}>`,
+with an optional `pulse` prop for the two "actively running" indicators that used to hand-roll a
+`pulse` keyframe animation inline), and `components/ui/accent-card.tsx` (`<AccentCard accentColor
+variant="flag"|"alert">`, generalizing SceneDetailSheet's two existing box treatments — `flag` for
+graded/categorical content, `alert` for a hard failure or active state). Then swept every caller:
+Dashboard's Needs Attention rows now render through `AccentCard variant="alert"` (matching
+SceneDetailSheet's own hard-failure treatment, since they're displaying the literal same kind of
+content — a FAILED request's error message — just in two different places), all ~13 status dots
+across `StoryboardPage`, `ProjectDetailPage`, `PipelineView`, `SceneCard`, `SceneDetailSheet`,
+`StageNode` (now round, matching everywhere else) and `GuidePage` (health/connection dots, which
+are boolean-driven rather than `StatusType`-driven, hence `StatusDot`'s dual `status`/`color` props)
+now render through the one `StatusDot` component, and `SceneDetailSheet`'s three box patterns plus
+its `reviewRunning` block all route through `AccentCard`. Also normalized a pulse-animation timing
+inconsistency found along the way (PipelineView's "running" dot was 1.6s, SceneDetailSheet's was
+1.2s) to one shared 1.2s baked into `StatusDot`.
+
+Verified: `npx tsc -b --noEmit` clean (rc=0); `npx eslint .` unchanged at the same 4 pre-existing
+errors as the prior session (three shadcn primitives' own fast-refresh warnings, one
+`setState`-in-effect in `StoryboardPage`'s active-project redirect — confirmed via line-content,
+not just count, that these are the same four); a `python3` sweep confirmed exactly one remaining
+`STATUS_COLOR`/`VERDICT_COLORS` definition in the whole `dashboard/src` tree and zero square dots.
+Drove the real dev server with `playwright-cli`: screenshotted Dashboard (Needs Attention now reads
+as a proper alert box, not a bare border), Storyboard (status/entity dots), a project's Pipeline tab
+(StageNode's legend dots now round, matching the SceneCard status badge beside them), and opened a
+SceneDetailSheet to confirm the status badge and layout render correctly post-refactor.
+
+---
+
 ## Session — 2026-08-17 (cont) — v1.2.2 (dashboard styling pass: attention list, project switcher, segmented control)
 
 Styling pass over the dashboard, invoked via the `design-taste-frontend` skill (which is written for landing pages — this is a dark ops-console dashboard, out of that skill's stated scope, so only its general anti-slop principles applied, not the marketing-page rules). Four fixes shipped, two more scoped and written into `PLAN.md` as not-yet-built, one item dropped as out of scope.

@@ -1,5 +1,6 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardContent } from '../ui/card'
 import { Progress } from '../ui/progress'
+import StatusDot from '../ui/status-dot'
 import { useTranslation } from '../../i18n/useTranslation'
 
 export type StageKey = 'refs' | 'image' | 'video' | 'upscale'
@@ -43,16 +44,16 @@ export default function StageNode({ idx, name, subtitle, done, processing, faile
           <Progress value={pct} />
           <div className="flex flex-wrap gap-x-3 gap-y-1.5 mt-3 text-[10px] tracking-wide" style={{ color: 'var(--muted)' }}>
             <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5" style={{ background: 'var(--green)' }} />{done} {t('stageNode.done')}
+              <StatusDot color="var(--green)" />{done} {t('stageNode.done')}
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5" style={{ background: 'var(--yellow)' }} />{processing} {t('stageNode.proc')}
+              <StatusDot color="var(--yellow)" />{processing} {t('stageNode.proc')}
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5" style={{ background: 'var(--red)' }} />{failed} {t('stageNode.fail')}
+              <StatusDot color="var(--red)" />{failed} {t('stageNode.fail')}
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5" style={{ background: 'var(--border)' }} />{pending} {t('stageNode.pend')}
+              <StatusDot color="var(--border)" />{pending} {t('stageNode.pend')}
             </span>
           </div>
         </CardContent>
