@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { fetchAPI } from '../api/client'
 import type { Project, Video, Scene } from '../types'
 import VideoGallery from '../components/gallery/VideoGallery'
+import ProjectSwitcher from '../components/projects/ProjectSwitcher'
 import { useTranslation } from '../i18n/useTranslation'
 
 export default function GalleryPage() {
@@ -40,21 +41,9 @@ export default function GalleryPage() {
   return (
     <div className="flex flex-col gap-4">
       {/* Filters */}
-      <div className="flex gap-3 flex-wrap items-end">
-        <div className="flex flex-col gap-1">
-          <label className="text-xs" style={{ color: 'var(--muted)' }}>{t('gallery.projectLabel')}</label>
-          <select
-            value={selectedProject}
-            onChange={e => setSelectedProject(e.target.value)}
-            className="text-xs px-2 py-1.5 rounded outline-none"
-            style={{ background: 'var(--card)', color: 'var(--text)', border: '1px solid var(--border)' }}
-          >
-            {projects.map(p => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
-        </div>
-        <span className="text-[11px] ml-auto" style={{ color: 'var(--muted)' }}>
+      <div className="flex items-end justify-between gap-3">
+        <ProjectSwitcher projects={projects} value={selectedProject} onChange={setSelectedProject} className="min-w-0 flex-1" />
+        <span className="text-[11px] shrink-0 pb-2" style={{ color: 'var(--muted)' }}>
           {t('gallery.count', { videos: videos.length, scenes: scenes.length })}
         </span>
       </div>

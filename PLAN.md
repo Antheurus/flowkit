@@ -320,4 +320,70 @@ Special messages:
 | `agent/services/scene_chain.py` | ✅ Keep | Already correct |
 | `agent/worker/processor.py` | 🔧 Fix | Async DB calls |
 | `agent/main.py` | 🔧 Fix | Add WS server, CORS, auth |
+
+---
+
+## PLANNED, NOT BUILT — MinIO Media Persistence
+
+Raised 2026-08-17 during a dashboard styling pass: Storyboard/Gallery thumbnails intermittently
+render as broken images. Root cause, confirmed by reading `flow_client.py`: `scene.vertical_image_url`
+/ `horizontal_image_url` (and the video/upscale equivalents) are Flow's own signed URLs
+(`storage.googleapis.com` / `lh3.googleusercontent.com`, enforced by `_SAFE_URL_RE`), written
+straight into SQLite by `_refresh_media_urls`. Those URLs expire; the app already has a
+`urls_refreshed` WS event to re-fetch fresh ones via TRPC capture, but that only works while a Flow
+tab is open and authenticated, so a cold dashboard load — or a refresh that missed a media id — shows
+a dead `<img>`. This section is a plan only. No code from it ships until picked up as its own task.
+
+**Goal:** every image/video the pipeline generates gets downloaded once and re-served from storage
+this app owns, so the dashboard never depends on a live Flow session or an unexpired Google URL again.
+
+**Shape:**
+1. **Storage.** MinIO container (`flowkit-minio`, next free port per `~/.claude/references/port.md`),
+   one bucket per media type or a single `flowkit-media` bucket keyed `{media_id}.{ext}`. Local dev
+   stays docker-compose; no code here assumes a specific deployment target yet — open question.
+2. **Mirror step.** The existing `_refresh_media_urls` path (and wherever a NEW media_id is first
+   written — image/video generation completion) gets a new step: download the Google URL's bytes
+   server-side, `PUT` to MinIO, then write the **MinIO-served URL** into `vertical_image_url` /
+   `horizontal_image_url` etc. instead of the Google one. `_SAFE_URL_RE` gains the MinIO host as a
+   second trusted domain (or drops the check for URLs already re-signed by us).
+3. **Schema.** No new table needed — the existing `vertical_image_url` / `horizontal_video_url` /
+   `*_upscale_url` columns already hold "the URL the dashboard should render"; the mirror step just
+   changes what gets written there. A `media_mirror_status` column (`PENDING` / `MIRRORED` / `FAILED`)
+   per scene is worth adding so a failed download degrades to "show the Google URL for now" instead of
+   silently blanking the thumbnail.
+4. **Backfill.** A one-off script over every scene/character with a non-null media_id and a Google URL,
+   same download-then-`PUT` logic, so existing projects (Jiera Liptint, Sensodyne, Rimpangi vs Karangi)
+   get mirrored once instead of only new generations going forward.
+5. **Dashboard.** No change needed once the URL columns point at MinIO — `<img src={thumb}>` call sites
+   in `StoryboardPage.tsx` / `VideoGallery.tsx` / `ProjectDetailPage.tsx` already just render whatever
+   URL is in the row.
+
+**Open questions for whoever picks this up:** does MinIO run alongside the existing `docker-compose.yml`
+services or is it already provisioned elsewhere; is the bucket public-read (simplest, matches Google's
+own signed-URL-as-public-enough posture) or does it need presigned URLs issued per-request through the
+agent's own API; and whether the mirror step blocks the generation request's own completion (adds
+latency, guarantees no broken-image window) or runs as a background sweep after (faster completion,
+brief window where a fresh media still points at Google).
+
+---
+
+## PLANNED, NOT BUILT — Scene Notes
+
+Raised in the same pass: no way to leave a note on a scene/character for the next person picking up
+the project — there's no `note` field or table anywhere in `agent/models` or `agent/db/schema.py`, and
+no per-user concept in this app at all (single shared operator console, no auth/session model), so a
+note is anonymous team scratch text, not an assignment.
+
+**Shape:**
+1. **Schema.** New `scene_note` table: `id, scene_id (FK), body TEXT, created_at`. Keep it scene-scoped
+   only for v1 (not project- or character-level) since that's the surface the request was made against
+   (Storyboard's scene cards); project/character notes are a follow-on, not v1.
+2. **API.** `GET /api/scenes/{id}/notes`, `POST /api/scenes/{id}/notes` (body only, no author field —
+   there's no user to attribute it to), `DELETE /api/notes/{id}`.
+3. **Dashboard.** A small note affordance on each scene card in `StoryboardPage.tsx` — icon-button that
+   opens existing notes inline (or in the scene's `SceneDetailSheet`, which already exists as a
+   per-scene detail surface and is the more consistent place for this) plus a plain textarea + submit.
+   No rich text, no @mentions — this is a shared single-tenant console, not a chat product.
+4. **Not in scope for v1:** editing/resolving a note, per-user attribution, notifications. If those
+   turn out to matter once v1 ships, they're a second pass, not baseline.
 | `extension/*` | 🔄 Rewrite | Everything wrong |

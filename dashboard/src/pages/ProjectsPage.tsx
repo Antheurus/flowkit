@@ -39,7 +39,7 @@ function ProjectCard({ project, onClick, t }: { project: Project; onClick: () =>
           <Badge variant="outline">{project.status}</Badge>
         </div>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="bg-transparent border-t-0 pt-0">
         <span className="text-[10px] tracking-wide" style={{ color: 'var(--muted)' }}>{t('projects.footer', { date: formatDate(project.created_at), id: project.id.slice(0, 8) })}</span>
       </CardFooter>
     </Card>
@@ -75,10 +75,16 @@ export default function ProjectsPage() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
         <Tabs value={tab} onValueChange={v => setTab(v as FilterTab)}>
-          <TabsList>
-            <TabsTrigger value="ACTIVE">{t('projects.tab.active')}</TabsTrigger>
-            <TabsTrigger value="ARCHIVED">{t('projects.tab.archived')}</TabsTrigger>
-            <TabsTrigger value="ALL">{t('projects.tab.all')}</TabsTrigger>
+          <TabsList className="h-9 gap-0.5 border border-[var(--border)] bg-[var(--surface)] p-1">
+            {(['ACTIVE', 'ARCHIVED', 'ALL'] as const).map(v => (
+              <TabsTrigger
+                key={v}
+                value={v}
+                className="rounded-md data-active:bg-[var(--card)] data-active:text-[var(--text)] data-active:shadow-none"
+              >
+                {t(`projects.tab.${v.toLowerCase()}` as TranslationKey)}
+              </TabsTrigger>
+            ))}
           </TabsList>
         </Tabs>
         <span className="ml-auto text-[11px]" style={{ color: 'var(--muted)' }}>{t('projects.count', { n: filtered.length })}</span>

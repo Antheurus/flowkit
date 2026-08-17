@@ -195,12 +195,15 @@ export default function DashboardPage() {
             {attentionRows.length === 0 ? (
               <div className="text-xs py-6 text-center" style={{ color: 'var(--muted)' }}>{t('dashboard.attention.empty')}</div>
             ) : (
-              <div className="flex flex-col gap-2">
-                {attentionRows.map(a => (
+              <div className="flex flex-col">
+                {attentionRows.map((a, i) => (
                   <div
                     key={a.id}
-                    className="rounded-md p-2.5 flex flex-col gap-1 cursor-pointer"
-                    style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderLeft: '2px solid var(--red)' }}
+                    className="flex flex-col gap-1 py-2.5 pl-3 pr-1 cursor-pointer transition-colors hover:bg-[var(--surface)]"
+                    style={{
+                      borderLeft: '2px solid var(--red)',
+                      borderBottom: i !== attentionRows.length - 1 ? '1px solid var(--border)' : undefined,
+                    }}
                     onClick={() => a.projectId && navigate(`/projects/${a.projectId}?tab=pipeline`)}
                   >
                     <div className="flex items-center gap-2">

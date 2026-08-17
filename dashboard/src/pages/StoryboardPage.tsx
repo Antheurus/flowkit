@@ -7,6 +7,7 @@ import { useTranslation } from '../i18n/useTranslation'
 import { statusLabel, chainLabel } from '../i18n/labels'
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card'
 import { Badge } from '../components/ui/badge'
+import ProjectSwitcher from '../components/projects/ProjectSwitcher'
 
 interface ActiveProject {
   project_id: string
@@ -92,20 +93,12 @@ export default function StoryboardPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex flex-col gap-1.5">
-          <h1 className="m-0 text-lg font-semibold" style={{ color: 'var(--text)' }}>{t('storyboard.title')}</h1>
-          <span className="text-[11px]" style={{ color: 'var(--muted)' }}>{t('storyboard.subtitle')}</span>
-        </div>
-        <select
-          value={project.id}
-          onChange={e => navigate(`/storyboard/${e.target.value}`)}
-          className="text-xs rounded-md px-2.5 py-1.5"
-          style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)' }}
-        >
-          {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-        </select>
+      <div className="flex flex-col gap-1.5">
+        <h1 className="m-0 text-lg font-semibold" style={{ color: 'var(--text)' }}>{t('storyboard.title')}</h1>
+        <span className="text-[11px]" style={{ color: 'var(--muted)' }}>{t('storyboard.subtitle')}</span>
       </div>
+
+      <ProjectSwitcher projects={projects} value={project.id} onChange={pid => navigate(`/storyboard/${pid}`)} />
 
       <Card className="py-4">
         <CardHeader>

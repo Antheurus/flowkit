@@ -1,5 +1,12 @@
 # Flow Kit Changelog
 
+## v1.2.2 — Dashboard styling cleanup
+
+- **Needs Attention list (Dashboard)** no longer looks like a stack of boxes — cleaner flagged rows with a thin red accent bar.
+- **Switching projects on Storyboard and Gallery** is now a tab bar you click across instead of a dropdown you have to open. Long project names shorten with "..." — hover to see the full name.
+- **Active / Archived / All filter (Projects page)** and the "created" date under each project card got a visual cleanup — no more mismatched gray box.
+- **Not yet done:** thumbnails still occasionally show as broken images (Flow's own image links expire) and there's still no way to leave a note on a scene — both are scoped and written up in `PLAN.md`, not built yet.
+
 ## v1.2.1 — Agent moved to a new port
 
 - **The local agent now runs on port `8743` instead of `8100`.** If you have anything bookmarked or scripted against `http://127.0.0.1:8100`, update it to `8743`. The dashboard and extension already point at the new port; no action needed for those.
